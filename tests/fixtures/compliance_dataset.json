@@ -1,0 +1,64 @@
+{
+  "examples": [
+    {
+      "input": {"source_id": "txn-0001", "status": "nominal", "metric_value": 120.50, "anomaly_score": 0.02, "domain": "aml"},
+      "expected_label": "low"
+    },
+    {
+      "input": {"source_id": "txn-0002", "status": "nominal", "metric_value": 45.00, "anomaly_score": 0.05, "domain": "aml"},
+      "expected_label": "low"
+    },
+    {
+      "input": {"source_id": "txn-0003", "status": "degraded", "metric_value": 9800.00, "anomaly_score": 0.41, "domain": "aml"},
+      "expected_label": "medium"
+    },
+    {
+      "input": {"source_id": "txn-0004", "status": "degraded", "metric_value": 7600.00, "anomaly_score": 0.38, "domain": "gdpr"},
+      "expected_label": "medium"
+    },
+    {
+      "input": {"source_id": "txn-0005", "status": "degraded", "metric_value": 15200.00, "anomaly_score": 0.62, "domain": "aml"},
+      "expected_label": "high"
+    },
+    {
+      "input": {"source_id": "txn-0006", "status": "critical", "metric_value": 250000.00, "anomaly_score": 0.94, "domain": "aml"},
+      "expected_label": "critical"
+    },
+    {
+      "input": {"source_id": "txn-0007", "status": "critical", "metric_value": 180000.00, "anomaly_score": 0.89, "domain": "aml"},
+      "expected_label": "critical"
+    },
+    {
+      "input": {"source_id": "txn-0008", "status": "critical", "metric_value": 99000.00, "anomaly_score": 0.81, "domain": "hipaa"},
+      "expected_label": "high"
+    },
+    {
+      "input": {"source_id": "txn-0009", "status": "nominal", "metric_value": 12.00, "anomaly_score": 0.01, "domain": null},
+      "expected_label": "low"
+    },
+    {
+      "input": {"source_id": "txn-0010", "status": "degraded", "metric_value": 5300.00, "anomaly_score": 0.35, "domain": "gdpr"},
+      "expected_label": "medium"
+    },
+    {
+      "input": {"source_id": "txn-0011", "status": null, "metric_value": 0.0, "anomaly_score": 0.0, "domain": null},
+      "expected_label": "unknown"
+    },
+    {
+      "input": {"source_id": "txn-0012", "status": "critical", "metric_value": 500000.00, "anomaly_score": 0.99, "domain": "aml"},
+      "expected_label": "critical"
+    },
+    {
+      "input": {"source_id": "txn-0013", "status": "nominal", "metric_value": 88.75, "anomaly_score": 0.03, "domain": "hipaa"},
+      "expected_label": "low"
+    },
+    {
+      "input": {"source_id": "txn-0014", "status": "degraded", "metric_value": 21000.00, "anomaly_score": 0.58, "domain": "aml"},
+      "expected_label": "high"
+    },
+    {
+      "input": {"source_id": "txn-0015", "status": "nominal", "metric_value": 300.00, "anomaly_score": 0.08, "domain": "gdpr"},
+      "expected_label": "low"
+    }
+  ]
+}

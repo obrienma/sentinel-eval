@@ -1,0 +1,24 @@
+[project]
+name = "sentinel-eval"
+version = "0.1.0"
+description = "Standalone AI evaluation framework for Sentinel-L7 and Synapse-L4 outputs"
+readme = "README.md"
+authors = [
+    { name = "obrienma", email = "obrien.ma@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "pydantic>=2.9",
+]
+
+[build-system]
+requires = ["uv_build>=0.11.2,<0.12.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
