@@ -68,8 +68,24 @@ what earlier layers flag as ambiguous — not on every item.
    **Implemented.**
 2. **`online/disagreement.py`** — cross-provider/cross-run disagreement
    (e.g. Sentinel-L7's dual Gemini/OpenRouter `ComplianceDriver`). Reuses
-   infrastructure the system-under-test already has. **Scaffolded, not
-   implemented.**
+   infrastructure the system-under-test already has. **Implemented and
+   live-verified.** `score_disagreement()` calls each named provider with
+   the same input and compares labels; a provider call that raises is
+   captured in `errors_by_provider` rather than dropped, and `agreed` is
+   only `True` when every provider answered with the exact same label —
+   an error makes agreement unknowable, not automatically true. Uses
+   Sentinel-L7's per-request driver override (Phase 3 step 6):
+   `adapters.sentinel_l7.make_sentinel_l7_system_under_test(driver=...)`
+   builds one callable per provider, each bypassing the semantic cache so
+   the comparison is never contaminated by a different provider's cached
+   verdict. Live-verified against a real local Sentinel-L7 server: Ollama
+   returned a real verdict; OpenRouter and Gemini both genuinely failed
+   (OpenRouter's configured free model was retired upstream — a 404 "No
+   endpoints found"; Gemini hit the same free-tier quota exhaustion seen
+   validating the judge layer) and both were correctly surfaced in
+   `errors_by_provider` rather than silently swallowed or crashing the
+   comparison — exercising the error path against real external failures,
+   not just mocks.
 3. **`online/consistency.py`** — embedding-based consistency against
    Upstash Vector's `transactions` namespace. `make_ollama_embed_fn()`
    calls Sentinel-L7's own local Ollama host/model/task-prefix convention
@@ -140,7 +156,11 @@ Two real adapters exist under `src/sentinel_eval/adapters/`:
   compliance grading down to a boolean `is_threat` before this tool could
   see it — `risk_level`/`narrative`/`confidence`/`policy_refs` are now
   surfaced too, verified backward-compatible against that repo's full test
-  suite).
+  suite). Also takes an optional `driver` parameter (`'gemini'`/`'openrouter'`/
+  `'ollama'`) that forces Sentinel-L7's per-request `ComplianceManager`
+  override instead of its app-wide default — building one instance per
+  provider is how `online.disagreement.score_disagreement` gets independent,
+  cache-bypassing verdicts for the same transaction.
 
 To wire up a new one:
 

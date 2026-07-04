@@ -148,6 +148,61 @@ def test_non_2xx_http_status_raises():
 
 
 @respx.mock
+def test_driver_override_is_sent_as_a_tool_argument():
+    route = respx.post(MCP_URL).mock(
+        return_value=httpx.Response(
+            200,
+            json=_mcp_result(
+                {
+                    "source": "driver_override",
+                    "is_threat": True,
+                    "message": "High value at ACME Corp",
+                    "elapsed_ms": 55.0,
+                    "risk_level": "high",
+                    "narrative": "High value at ACME Corp",
+                    "confidence": 0.8,
+                    "policy_refs": [],
+                }
+            ),
+        )
+    )
+
+    sut = make_sentinel_l7_system_under_test(mcp_url=MCP_URL, driver="openrouter")
+    prediction = sut({"id": "txn-7", "amount": 500.0, "currency": "USD", "merchant": "ACME Corp"})
+
+    assert prediction.metadata["source"] == "driver_override"
+    sent_body = json.loads(route.calls.last.request.content)
+    assert sent_body["params"]["arguments"]["driver"] == "openrouter"
+
+
+@respx.mock
+def test_no_driver_argument_sent_when_driver_not_set():
+    route = respx.post(MCP_URL).mock(
+        return_value=httpx.Response(
+            200,
+            json=_mcp_result(
+                {
+                    "source": "cache_miss",
+                    "is_threat": False,
+                    "message": "ok",
+                    "elapsed_ms": 1.0,
+                    "risk_level": "low",
+                    "narrative": "ok",
+                    "confidence": None,
+                    "policy_refs": [],
+                }
+            ),
+        )
+    )
+
+    sut = make_sentinel_l7_system_under_test(mcp_url=MCP_URL)
+    sut({"id": "txn-8", "amount": 10.0, "currency": "USD", "merchant": "Cafe"})
+
+    sent_body = json.loads(route.calls.last.request.content)
+    assert "driver" not in sent_body["params"]["arguments"]
+
+
+@respx.mock
 def test_default_mcp_url_matches_config():
     from sentinel_eval import config
 

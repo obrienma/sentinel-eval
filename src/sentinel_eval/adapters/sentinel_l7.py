@@ -58,6 +58,7 @@ def make_sentinel_l7_system_under_test(
     mcp_url: str | None = None,
     client: httpx.Client | None = None,
     timeout: float = 10.0,
+    driver: str | None = None,
 ) -> SystemUnderTest:
     """Build a system_under_test callable that scores input through Sentinel-L7.
 
@@ -71,6 +72,15 @@ def make_sentinel_l7_system_under_test(
     Sentinel-L7 returns null, i.e. the rule-based fallback path ran with no
     AI model involved — EvalPrediction.confidence is non-optional, and 0.0
     is the lowest-confidence signal available, not a guess at a real score).
+
+    `driver` forces a specific ComplianceManager driver ('gemini' /
+    'openrouter' / 'ollama') via the tool's optional `driver` argument
+    (Sentinel-L7 Phase 3 step 6) instead of the app-wide configured
+    default. Building one system_under_test per driver is how
+    online.disagreement.score_disagreement gets independent per-provider
+    verdicts for the same transaction — each override call bypasses
+    Sentinel-L7's semantic vector cache entirely, so results are never a
+    stale cached verdict from a different provider.
     """
     resolved_url = mcp_url or config.sentinel_l7_mcp_url()
     http_client = client or httpx.Client(timeout=timeout)
@@ -78,6 +88,8 @@ def make_sentinel_l7_system_under_test(
     def system_under_test(input_data: dict) -> EvalPrediction:
         correlation_id = input_data.get("id") or str(uuid.uuid4())
         arguments = {**input_data, "id": correlation_id}
+        if driver is not None:
+            arguments["driver"] = driver
 
         response = http_client.post(
             resolved_url,
