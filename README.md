@@ -56,6 +56,18 @@ report = run_eval(my_system_under_test, dataset)
 print(report.accuracy, report.per_label)
 ```
 
+Two fixtures ship under `tests/fixtures/`: `compliance_dataset.json`
+(hand-written, 15 examples) and `sentinel_l7_ground_truth.json` (200
+examples, generated from Sentinel-L7's real pre-AI simulation profiles via
+`php artisan sentinel:export-ground-truth` — see that repo's
+`app/Console/Commands/ExportGroundTruth.php`). The latter's `expected_label`
+is only ever `'high'`/`'low'` — ground truth pre-AI only knows a binary
+threat flag, not a graded `risk_level` — so scoring Sentinel-L7 predictions
+against it should collapse `medium`/`critical` into `'high'` the same way
+`TransactionProcessorService::gradeAiResult()` does internally
+(`is_threat = risk_level != 'low'`), rather than penalizing a correctly-
+caught threat just because it landed on a different severity than `'high'`.
+
 ### Online (unlabeled, realistic traffic) — `sentinel_eval.online.*`
 
 Production/sampled traffic has no ground truth, so it's scored by a
@@ -123,16 +135,38 @@ what earlier layers flag as ambiguous — not on every item.
    which scores `anomaly_score` for production routing — different purpose,
    different consumer. Before this judge is used to score unlabeled
    traffic, its verdicts should be validated against a labeled dataset via
-   the offline `run_eval` path first — **deferred**: a real live run of
-   `judge_as_system_under_test` against `tests/fixtures/compliance_dataset.json`
-   scored only 6.7% accuracy, but inspection showed the judge reasoning
-   correctly and just answering in the *wrong taxonomy* — that fixture's
-   `raw_output` is Synapse-shaped (`status`/`anomaly_score`) while its
-   `expected_label` is Sentinel's `risk_level` vocabulary, a pre-existing
-   mismatch invisible to `run_eval()` (which never inspects `raw_output`,
-   only compares `label`) until something reasoned over the raw fields
-   directly. Full validation is deferred to Step 8 (ground-truth export),
-   which will produce a taxonomy-consistent Sentinel-shaped fixture.
+   the offline `run_eval` path first. An early attempt against
+   `tests/fixtures/compliance_dataset.json` scored only 6.7% accuracy, but
+   inspection showed the judge reasoning correctly and just answering in
+   the *wrong taxonomy* — that fixture's `raw_output` is Synapse-shaped
+   (`status`/`anomaly_score`) while its `expected_label` is Sentinel's
+   `risk_level` vocabulary, a mismatch invisible to `run_eval()` (which
+   never inspects `raw_output`, only compares `label`) until something
+   reasoned over the raw fields directly. **Validated** as of Step 8 against
+   the taxonomy-consistent `sentinel_l7_ground_truth.json` fixture instead
+   — see [Benchmark results](#benchmark-results) below.
+
+## Benchmark results
+
+Live-verification runs against real services, not mocks. The Journal column
+links to the entry with full methodology (sample composition, seed, raw
+per-item output).
+
+| Date | Fixture | System | Sample | Strict accuracy | Binary accuracy | Notes | Journal |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-07-04 | `sentinel_l7_ground_truth.json` | Sentinel-L7 (`driver=ollama`, cache bypassed) | 25 live / 200 (all 10 `high` + 15 random `low`, seed 42) | 84% | **92%** | First attempt (no driver override) scored 52% — a real semantic-cache amplification bug, not a model failure; tracked as a Known Issue in sentinel-l7's own README. | [step 8](docs/journal/sentinel-eval-2026-07-04T1720-ground-truth-export-and-judge-validation.md) |
+| 2026-07-04 | `sentinel_l7_ground_truth.json` | Judge (`qwen3.5:9b-q4_K_M` via Ollama) | Same 25, called unconditionally (bypassing the heuristic gate) | 80% | **92%** | 2/25 verdicts were non-taxonomy tokens (`"reject"`, `"correct"`) instead of a label — a prompt-following gap, not yet fixed. | [step 8](docs/journal/sentinel-eval-2026-07-04T1720-ground-truth-export-and-judge-validation.md) |
+| 2026-07-04 | `compliance_dataset.json` | Judge (`qwen3.5:9b-q4_K_M` via Ollama) | All 15 | 6.7% | — | Fixture defect, not a judge failure: `raw_output` is Synapse-shaped, `expected_label` is Sentinel-shaped — the judge answered correctly in the wrong taxonomy. Superseded by the row above; kept here as a documented false alarm. | [step 5](docs/journal/sentinel-eval-2026-07-04T1512-judge-layer.md) |
+
+**Strict vs. binary**: `sentinel_l7_ground_truth.json`'s `expected_label` is
+only ever `'high'`/`'low'` (ground truth pre-AI knows only a boolean threat
+flag — see "Offline (ground truth)" above). *Strict* compares the predicted
+label string exactly; *binary* collapses `medium`/`high`/`critical` to
+`'high'` first (`is_threat = risk_level != 'low'`, matching
+`TransactionProcessorService::gradeAiResult()`). Binary is the number that
+reflects what this ground truth can actually justify claiming — a
+`critical` verdict on a real threat is a correct catch, not a miss, and
+strict accuracy alone would misrepresent that as a failure.
 
 ## Plugging in a new system-under-test
 

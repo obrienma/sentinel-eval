@@ -162,6 +162,15 @@ verdicts should be validated against the labeled `TransactionSeeder` set
 first (same harness, offline path). A judge that hasn't been evaluated
 against ground truth isn't yet trustworthy to evaluate anything else.
 
+> **Validated 2026-07-04** (Phase 3 step 8): live 25-example sample against
+> the real Ollama judge and a real Sentinel-L7 server, scored against the
+> `sentinel:export-ground-truth` fixture — 92% binary agreement (threat vs.
+> not), matching Sentinel-L7's own accuracy on the same sample. Full
+> results and methodology in
+> `docs/journal/sentinel-eval-2026-07-04T1720-ground-truth-export-and-judge-validation.md`.
+> A prompt-following gap was found (occasional non-taxonomy verdict tokens)
+> and is tracked there as a follow-up, not a blocker to this gate.
+
 ---
 
 ## Consequences

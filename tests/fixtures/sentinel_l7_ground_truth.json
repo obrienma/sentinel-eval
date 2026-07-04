@@ -1,0 +1,2004 @@
+{
+    "examples": [
+        {
+            "input": {
+                "id": "3b6de83e-1e16-4648-98ee-50883fa59464",
+                "amount": 288.63,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "96e4ad22-11a2-4b97-b699-03bcf33f0603",
+                "amount": 72.97,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "3c00e97a-928d-49f7-9181-f19df55f1146",
+                "amount": 200.47,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "68c8e58a-fed6-4407-9b1e-8e1ac2ee2bdf",
+                "amount": 86.09,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "9d7ed150-4591-418a-8ab8-d8abb2a41b51",
+                "amount": 1858.93,
+                "currency": "GBP",
+                "merchant": "Pacific Forex Exchange",
+                "category": "forex"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "633cbd94-8b02-4491-86f8-18c2d9b484ed",
+                "amount": 214.6,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "d35ea0fa-d6b1-478c-84c4-68e95a8bd71f",
+                "amount": 274.82,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "38f17dbf-a452-42a0-aaab-2f1639e7a0c3",
+                "amount": 101.62,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "2399d521-2e7d-405a-9733-8d105714f818",
+                "amount": 83.27,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "fcd12bb4-4f08-45ce-a940-0e4f4a1b99e7",
+                "amount": 495.85,
+                "currency": "USD",
+                "merchant": "RapidRemit Structuring Node",
+                "category": "suspicious"
+            },
+            "expected_label": "high"
+        },
+        {
+            "input": {
+                "id": "2aeb5475-bab6-4117-b8f8-d6d28d90a33f",
+                "amount": 90.04,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "d918a5e3-b6f0-4ff1-a9c7-6aac8c65a491",
+                "amount": 153.77,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "66cd84f1-3242-48a5-bcdb-2e914d1b8c8a",
+                "amount": 54.9,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "c79f3279-872c-4bc3-baf2-6643a6ae3cbd",
+                "amount": 297.61,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "3f6be734-246d-4b18-8095-5d1bd285259f",
+                "amount": 222.06,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "cb510419-9872-4ee1-8397-a8e0f090da3a",
+                "amount": 116.02,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "5a8aa95c-add2-4e04-a7a8-c7bf46af3591",
+                "amount": 218.36,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "7386a44a-1585-4fb2-9bf0-b3e58fef8ad4",
+                "amount": 2239.25,
+                "currency": "USD",
+                "merchant": "Pacific Forex Exchange",
+                "category": "forex"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "eb473e7e-e3be-44da-8d92-ef89d47d3e7c",
+                "amount": 213.37,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "45bf8f5d-f94f-4f94-9e7b-cb3793f9dd59",
+                "amount": 74.32,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "919aa3d7-f62f-4a85-98a1-883471c69784",
+                "amount": 110.1,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "a3fab360-91a8-4ca1-b6da-b325cada3870",
+                "amount": 144.74,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "d8b54c86-ed63-4efa-880b-42c2ce625ca2",
+                "amount": 250.35,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "bf3ac29f-3770-40db-81c0-6468ad86a937",
+                "amount": 218.55,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "e94ff7fd-dbc3-4495-9fb9-56e688825100",
+                "amount": 121.53,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "299b64f4-dbe5-4adf-9225-282c31a61f84",
+                "amount": 189.4,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "257eb4db-a862-431b-88a3-f3a414c139ab",
+                "amount": 70.88,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "fe8c4434-a8b5-4e63-8bf4-c03dc95ca687",
+                "amount": 111.91,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "8c7e1ff3-9fbc-465e-b359-f24391efe0b7",
+                "amount": 45.84,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "69760caf-a017-4ccf-ae05-4e86dbfa13bd",
+                "amount": 72.7,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "32dd861c-5a6d-4f23-955a-b6ab9038f332",
+                "amount": 148.03,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "09e3f47a-81ca-42d0-b59f-8afadf4eb468",
+                "amount": 44.49,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "f8887b13-30c5-43f8-89c5-7fe27217d875",
+                "amount": 280.72,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "6ec5a0e5-2f34-4716-81f2-6bf1065e51a1",
+                "amount": 53.12,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "1863351f-a78e-4b8b-a1f2-6f22a4eeae35",
+                "amount": 159.03,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "9233e6af-8e5c-4b47-9770-8d67acd9834b",
+                "amount": 25.14,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "d7e07439-5e25-4e96-815e-63216ef0bd5f",
+                "amount": 499.21,
+                "currency": "USD",
+                "merchant": "RapidRemit Structuring Node",
+                "category": "suspicious"
+            },
+            "expected_label": "high"
+        },
+        {
+            "input": {
+                "id": "c30898dd-0448-43be-9579-78d1695488ca",
+                "amount": 72.25,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "ed502c69-e70d-476d-964a-37db9641b75b",
+                "amount": 57.18,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "bf1239fd-ef4a-4ffd-b540-1a3a983924f8",
+                "amount": 9.71,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "a6c2737b-76d4-40e8-8b25-442577cb18bc",
+                "amount": 125.32,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "1dc8ce6b-7827-4748-8f99-26bf069239e5",
+                "amount": 221.39,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "41cf5737-fd2e-4a3d-814c-99b5469fcbb7",
+                "amount": 41.01,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "39c46482-948a-4367-8857-9d8448515f2e",
+                "amount": 43.26,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "b238f243-2e8f-4611-afcf-7d9eadd55c27",
+                "amount": 29.2,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "5bc44f79-6f0a-478e-85b5-a96d64ebc4ab",
+                "amount": 178.15,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "67bd9a2b-88eb-456d-b1f7-03126348d9ae",
+                "amount": 278.8,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "6f30ee65-b907-4620-894e-cca5ee73558e",
+                "amount": 496.65,
+                "currency": "USD",
+                "merchant": "RapidRemit Structuring Node",
+                "category": "suspicious"
+            },
+            "expected_label": "high"
+        },
+        {
+            "input": {
+                "id": "9018ae32-323b-451b-80d8-ce6baf6e3c13",
+                "amount": 2407.95,
+                "currency": "GBP",
+                "merchant": "Pacific Forex Exchange",
+                "category": "forex"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "07506f6f-d722-45c9-940f-817f91533d96",
+                "amount": 276.01,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "72906a01-ff13-444b-a1ad-81eb24bfc055",
+                "amount": 280.05,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "a9a019c6-aff0-403a-bbbc-e12f1b81fd32",
+                "amount": 42,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "db76a0d6-2813-4800-a44e-895fbf286ec1",
+                "amount": 237.3,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "fb97b3d5-278e-490c-9162-92a37bf26bd7",
+                "amount": 56.34,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "7e70ccdd-8efb-4f64-91cc-67750f9c13f9",
+                "amount": 48.04,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "19b8740a-475e-4f29-b640-5eb4c571f075",
+                "amount": 36.87,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "c86666b8-728c-4c73-95b7-86911a422884",
+                "amount": 44.7,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "3b98651c-1e82-4b9e-a4b8-a1667ab32fee",
+                "amount": 125.46,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "b6f0a83c-0de4-48f3-93f8-ca3e2addf866",
+                "amount": 71.99,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "ed704023-fd1b-4279-b926-d53e7c93c372",
+                "amount": 202.95,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "494b7a6f-aff9-41a2-8952-6b4556d5084f",
+                "amount": 79.97,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "ebcb6ec4-f9ea-4a75-aaa0-fb5c52e291a4",
+                "amount": 5.21,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "afc72fe9-ba6a-4e22-b7ba-7f75c0b3e331",
+                "amount": 1182.24,
+                "currency": "CAD",
+                "merchant": "Pacific Forex Exchange",
+                "category": "forex"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "0ef170c6-afb6-4ed8-9fba-ecb07e76a806",
+                "amount": 129.13,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "075d742f-e6c9-4950-a3a4-7e4b42f51bdd",
+                "amount": 180.29,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "6607b5d4-671a-4231-b74b-4e348e612463",
+                "amount": 288.23,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "11f8c4ab-3733-4ed9-b936-57aa6fd11cda",
+                "amount": 14.8,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "f12edb2e-6635-4050-8777-8471130ffb8a",
+                "amount": 19.39,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "2f29595f-37d1-4c05-9f07-729e4ebc9c70",
+                "amount": 24.79,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "639e1493-6cb1-4f25-acd0-8610804d638c",
+                "amount": 8.1,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "a87af16d-7e09-4e56-aafb-2f8ca61c044f",
+                "amount": 34.66,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "784559f5-1de8-420a-8437-356dd4de9088",
+                "amount": 121.66,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "e58bc179-f201-4686-8fb0-1b4c8a49563f",
+                "amount": 496.12,
+                "currency": "USD",
+                "merchant": "RapidRemit Structuring Node",
+                "category": "suspicious"
+            },
+            "expected_label": "high"
+        },
+        {
+            "input": {
+                "id": "688c93fe-f178-41fd-86bc-da00d7ebc1f3",
+                "amount": 12.66,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "9ddd1069-c7bb-4f21-8e4d-337c13d1c5e8",
+                "amount": 223.35,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "8aadf37e-5319-494e-9332-4ebacad540e9",
+                "amount": 90.84,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "03a763d0-d8fc-44cb-a54b-d9de099c2242",
+                "amount": 55.28,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "e5fa0e16-382a-42c8-b120-b7980744ed52",
+                "amount": 21.35,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "37a36482-704c-40e9-af4c-fc7c3dc22715",
+                "amount": 42.87,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "4d89972b-2237-48fd-8291-029df56631c5",
+                "amount": 2316.82,
+                "currency": "EUR",
+                "merchant": "Pacific Forex Exchange",
+                "category": "forex"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "2c4cb032-56c1-4ee1-abe7-9a97d09dcb80",
+                "amount": 188.95,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "bd3bb77a-0f9a-4ce5-be07-6c18fc76fd25",
+                "amount": 238.92,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "f8696aea-ca66-476e-a210-5115518e7264",
+                "amount": 264.79,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "106e9743-3949-405f-99e3-6b203d4b4bc7",
+                "amount": 13.71,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "acafb60b-ec87-48ad-8f80-44ed5576d1f2",
+                "amount": 245.63,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "8c5ed1d8-48e2-46de-8d5e-7eac2d2fc3b9",
+                "amount": 87.39,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "afdea4be-9dfe-423b-a5c3-741008f07f22",
+                "amount": 13.44,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "c9ff7b2f-ab1a-455b-976f-81bb943fd621",
+                "amount": 66.57,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "7d2cbca2-3284-435d-9a31-29d1f4cdd13a",
+                "amount": 43.02,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "9daa32f7-9906-4d82-ad47-51ecdcfce665",
+                "amount": 289.44,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "3fb7badc-e18b-4b8c-bf87-946ed26ea584",
+                "amount": 498.4,
+                "currency": "USD",
+                "merchant": "RapidRemit Structuring Node",
+                "category": "suspicious"
+            },
+            "expected_label": "high"
+        },
+        {
+            "input": {
+                "id": "2c758187-4f14-469a-a169-bf7e314aacc7",
+                "amount": 499.79,
+                "currency": "USD",
+                "merchant": "RapidRemit Structuring Node",
+                "category": "suspicious"
+            },
+            "expected_label": "high"
+        },
+        {
+            "input": {
+                "id": "95ea8a7a-541e-4806-8bc3-c1261b1fdf8b",
+                "amount": 204.99,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "2022c4c7-c8da-442b-93ab-9021c3e950d0",
+                "amount": 46.44,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "3373ad68-3bd1-41d0-8a86-b7e4256d0fe4",
+                "amount": 64.24,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "ea6dfde9-a078-49e5-8252-6dfe801dc401",
+                "amount": 208.33,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "48451c8a-0cec-4943-ba1f-3363c6f1575c",
+                "amount": 48.59,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "724d637d-f3e5-446d-bb48-14eecba06198",
+                "amount": 66.75,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "6fd54b19-5823-49ac-af0c-cbff3aef9b9c",
+                "amount": 273.88,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "1628b08c-819f-4bcc-8b5c-c21e0522702e",
+                "amount": 191.19,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "58f27412-11f9-46f8-938d-d80775a55427",
+                "amount": 7.76,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "ea345711-90fb-4a04-a8ec-810b5b147fad",
+                "amount": 8.41,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "2d03b3f3-0871-4fc6-9439-d2ba1c96c56f",
+                "amount": 208.49,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "0700e669-354c-40fc-822f-a4688aea8f3b",
+                "amount": 154.24,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "dea07d88-d363-40c5-90c0-87d1bfeb30a2",
+                "amount": 296.38,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "463948ef-fd12-4320-9dca-7c62b5b17dd2",
+                "amount": 245.25,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "983f002c-650e-414e-95bc-c5f1f0ce12fd",
+                "amount": 195.02,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "fdb2a852-93fa-49a1-88fa-879586aac628",
+                "amount": 151.51,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "99660179-8cec-4af2-bce0-21e95c9f3c60",
+                "amount": 106.97,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "23afc01c-0f27-4cad-a460-316c856291b0",
+                "amount": 109.72,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "e14f52ed-f72c-4512-98cc-8a84beff4fd4",
+                "amount": 48.83,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "0143ba3a-c310-4b3a-9585-636695c8a18c",
+                "amount": 34.51,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "7ea42c6d-cfbc-4025-a26e-5ed52ec39a95",
+                "amount": 280.48,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "61c6c279-6384-453d-9965-72f007116316",
+                "amount": 253.81,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "bb180563-9e86-43ef-8c83-f63d3b84d9f6",
+                "amount": 55.1,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "344cce92-49ba-45da-8d3f-2b9fb57d21e1",
+                "amount": 23.61,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "4a739576-75f1-4c1f-a86b-6dfc653d33ab",
+                "amount": 498.37,
+                "currency": "USD",
+                "merchant": "RapidRemit Structuring Node",
+                "category": "suspicious"
+            },
+            "expected_label": "high"
+        },
+        {
+            "input": {
+                "id": "99df3572-d00c-41b7-a267-117b29a6e798",
+                "amount": 92.68,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "72c3fbbd-8c09-43b0-84f9-ba4786f3ceb2",
+                "amount": 48.66,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "5e6469b6-8f9f-4516-9f49-8a3c64a7c8c7",
+                "amount": 77.38,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "d87e570f-c943-4b18-b182-efc817904760",
+                "amount": 1507.59,
+                "currency": "USD",
+                "merchant": "Pacific Forex Exchange",
+                "category": "forex"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "45b2c314-bebf-4ce6-ae9c-eba3afa60f40",
+                "amount": 222.82,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "aad2e77a-bdd8-4c24-8e24-e96ac0886837",
+                "amount": 45.36,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "96fea42a-14c7-4771-934b-9cf0664b734a",
+                "amount": 46.05,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "d9b8472f-9ec6-4c47-8097-6566a3e6aeda",
+                "amount": 256.4,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "d57e8f20-9cc1-4562-9eb0-0a838f05cd65",
+                "amount": 497.98,
+                "currency": "USD",
+                "merchant": "RapidRemit Structuring Node",
+                "category": "suspicious"
+            },
+            "expected_label": "high"
+        },
+        {
+            "input": {
+                "id": "9dc8cca8-8d24-4e23-bddc-9a7981adc0d2",
+                "amount": 64.15,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "175f06bb-fda2-4912-9602-58f9f2278b00",
+                "amount": 212.43,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "2fb2c01e-69ea-42da-9f7e-65a2f72d7eb0",
+                "amount": 4678.06,
+                "currency": "JPY",
+                "merchant": "Pacific Forex Exchange",
+                "category": "forex"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "7fb8fc63-f96e-43c1-b033-9b71c81ea557",
+                "amount": 213,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "366185d5-28e2-4086-9c71-bb9d68769315",
+                "amount": 84.12,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "8a74a0d1-33ee-4c0a-8413-5178a860c6c1",
+                "amount": 499.73,
+                "currency": "USD",
+                "merchant": "RapidRemit Structuring Node",
+                "category": "suspicious"
+            },
+            "expected_label": "high"
+        },
+        {
+            "input": {
+                "id": "26851c05-0d27-4ea4-97d3-c4f0ebe80ca4",
+                "amount": 237.66,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "2694c738-bc39-450d-b9dd-48f24ba570eb",
+                "amount": 167.81,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "fff5bff8-f451-4447-8470-f843837bad1a",
+                "amount": 117.09,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "b3cc09af-6db2-4ab7-97b1-80b362ffa36a",
+                "amount": 45.9,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "18fc9327-a2c5-4af4-b416-61ee2ca5b369",
+                "amount": 26.04,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "7fce10ad-d448-4705-b0f6-da6d031558a8",
+                "amount": 94.74,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "928a6dd1-5a4e-4249-b1b0-357d9b42f8e1",
+                "amount": 36.09,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "e5e7afbb-0d2e-431c-8377-274b085a639a",
+                "amount": 111.63,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "0b92ee10-b915-4485-bbfb-47f3610ceb03",
+                "amount": 162.81,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "0fb0e421-bdfd-4dbf-af7d-cbd3c0806062",
+                "amount": 37,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "e030ed3d-24cd-44c1-8648-624aa0806e57",
+                "amount": 11.73,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "74d6f4a0-97ca-4ec9-92a1-8c1695235a6c",
+                "amount": 46.57,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "133ea642-7070-49b8-bb09-edec7b778767",
+                "amount": 33.42,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "3bdecdc2-dc32-4ab5-9e03-b2148688e19a",
+                "amount": 182.52,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "122c324e-ef13-4ad6-95ed-648a3aa5e2b8",
+                "amount": 68.73,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "7a597812-8806-4c06-b43b-a1aca180544a",
+                "amount": 42.5,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "b3d80c95-8f85-4f02-891b-7977b1c7e76b",
+                "amount": 53.79,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "411528bd-6bae-455e-a079-dff93e9a9177",
+                "amount": 23.89,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "7d89dcf6-bc1b-46e3-bef7-b9a480db838b",
+                "amount": 86.54,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "ae20db2a-974c-4e65-a8ea-f131a93d7c37",
+                "amount": 249.8,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "64781751-a289-44b6-9173-8bc3935134bf",
+                "amount": 73.17,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "96a06c3c-bfe8-417e-ad74-fa1746f714ff",
+                "amount": 250.52,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "d888df96-21fe-4d3a-afe4-323342cbe5aa",
+                "amount": 162.08,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "15973a38-142b-4625-8f56-781e484f4551",
+                "amount": 1031.21,
+                "currency": "GBP",
+                "merchant": "Pacific Forex Exchange",
+                "category": "forex"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "a0b1853b-ec20-47ac-917a-1f8cd79c7be1",
+                "amount": 68.54,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "d7a21c3c-c2fe-4e27-a39f-0bc900a7311b",
+                "amount": 228.4,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "353dc646-e237-47d8-99b8-4f0572dee6bb",
+                "amount": 12.69,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "14729378-def5-4af1-8b66-ef4aea50fc01",
+                "amount": 168.4,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "ad0a06e3-e24c-4e5f-8724-3c098bb2fd56",
+                "amount": 3397.65,
+                "currency": "USD",
+                "merchant": "Pacific Forex Exchange",
+                "category": "forex"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "10243643-6020-4d45-919c-be3aeceab9e0",
+                "amount": 259.74,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "069c36c8-bfa7-4ccb-931f-e134f094683a",
+                "amount": 22.89,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "b1fefa3c-faec-49c1-ae85-ba37393aa6aa",
+                "amount": 49.83,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "fd5b3120-4e3f-41c5-a9c2-b5370d627c43",
+                "amount": 10.34,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "d0db7a96-59ee-4471-a02b-89cc225de28d",
+                "amount": 78.21,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "d1827534-1d88-46d0-9c46-6b0d12e22e06",
+                "amount": 276.84,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "b1bd53f2-ad8c-4ee6-930c-b70683d166f2",
+                "amount": 47.2,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "cf279329-5bab-403d-8f49-8c6cea92e555",
+                "amount": 56.95,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "f17fc372-8181-4331-ad54-0ea895f34f01",
+                "amount": 60.65,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "8108aaef-1b07-457e-9334-f239efec3f08",
+                "amount": 95.91,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "504f0812-18a4-4b7d-bdb2-42b74a6f13a0",
+                "amount": 495.25,
+                "currency": "USD",
+                "merchant": "RapidRemit Structuring Node",
+                "category": "suspicious"
+            },
+            "expected_label": "high"
+        },
+        {
+            "input": {
+                "id": "2c466704-b1ee-490e-9f68-27259c6176d8",
+                "amount": 11.52,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "da9f1b52-98ab-48af-88d5-b7c57b67b728",
+                "amount": 63.55,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "5df91894-93cc-4de6-bb97-bd00b1321cae",
+                "amount": 253.03,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "8cdf8ca0-e20c-4d1e-8344-5b8df80b92f7",
+                "amount": 6.91,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "a99bea41-e692-4773-93ad-6bc7571fbf3c",
+                "amount": 43.23,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "4a0e9890-7f9b-4ce3-a0d3-3791c08e8bbc",
+                "amount": 157.61,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "24ba23d5-5622-4f71-88f2-c3ad52b6a703",
+                "amount": 69.99,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "90178311-58be-4c81-b9ba-2d0c8d005676",
+                "amount": 70.61,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "76376073-7527-4ac8-b260-efa9791f556d",
+                "amount": 251.92,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "df41ab35-52f4-481e-965a-8552e1c6a205",
+                "amount": 162.69,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "26461628-679b-4ab2-b4bd-546291a6056f",
+                "amount": 1567.93,
+                "currency": "USD",
+                "merchant": "Pacific Forex Exchange",
+                "category": "forex"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "16545df5-8944-47c6-b668-4c8b1c6785d7",
+                "amount": 4387.75,
+                "currency": "GBP",
+                "merchant": "Pacific Forex Exchange",
+                "category": "forex"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "fd450b75-50c9-4035-89e4-b5b18a4255e0",
+                "amount": 137.98,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "dd6682c3-028d-4d8c-bea5-7a268bf2a6a0",
+                "amount": 33.69,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "1b28acd8-d0f9-438f-a2a3-a123b6069dcf",
+                "amount": 48.5,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "572e3626-37a0-4aaf-a45a-7773a19f4af1",
+                "amount": 255.15,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "6e225c19-5fb6-41fb-a37b-b55fc5b6149b",
+                "amount": 270.85,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "e1684d6c-3eb9-4dc4-8718-ac254b5c5a44",
+                "amount": 190.3,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "b21ae4be-494d-4147-9da3-ae61c0c43547",
+                "amount": 31.77,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "0a4847d3-3c8f-4371-a511-c66e5b9a38bb",
+                "amount": 47.63,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "105df8aa-b10d-415b-aafb-f250b62d0e9d",
+                "amount": 155.99,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "b829ea66-629c-4335-9a5c-52286d319b7d",
+                "amount": 62.49,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "3646267f-0413-444e-bc10-e6145a7d69a7",
+                "amount": 296.97,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "fba20112-a6a3-4521-a6e5-519a4a65800e",
+                "amount": 74.61,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "005e9bd8-37c7-4dab-86dc-828e19c56b71",
+                "amount": 256.21,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "cf025763-77ef-485e-8644-90dc92a85362",
+                "amount": 82.86,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "a5f5bfb4-5c12-481a-ae35-4a78ebef39c8",
+                "amount": 45.85,
+                "currency": "CAD",
+                "merchant": "Kim's Farm Market",
+                "category": "retail"
+            },
+            "expected_label": "low"
+        },
+        {
+            "input": {
+                "id": "2313e8d2-af00-4d0d-b35e-2e22e1ba2c89",
+                "amount": 67.1,
+                "currency": "CAD",
+                "merchant": "Costco Burnaby",
+                "category": "grocery"
+            },
+            "expected_label": "low"
+        }
+    ]
+}
