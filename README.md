@@ -71,12 +71,20 @@ what earlier layers flag as ambiguous — not on every item.
    infrastructure the system-under-test already has. **Scaffolded, not
    implemented.**
 3. **`online/consistency.py`** — embedding-based consistency against
-   Upstash Vector. Must call through the system-under-test's own embedding
-   driver/config (e.g. Sentinel-L7's `EmbeddingService`), never a
-   hardcoded model — Sentinel-L7 is mid-migration from 1536-dim Gemini
-   embeddings to 768-dim `nomic-embed-text:v1.5`, and embedding
-   independently here would cause Upstash dimension-mismatch errors the
-   moment the two diverge. **Scaffolded, not implemented.**
+   Upstash Vector's `transactions` namespace. `make_ollama_embed_fn()`
+   calls Sentinel-L7's own local Ollama host/model/task-prefix convention
+   exactly (verified against `OllamaEmbeddingDriver::embed()` directly),
+   never a hardcoded model — Sentinel-L7's live config has
+   `SENTINEL_EMBEDDING_DRIVER=ollama`, 768-dim `nomic-embed-text:v1.5`, and
+   embedding independently here would cause Upstash dimension-mismatch
+   errors the moment the two diverge. `query_upstash_vector()` mirrors
+   `VectorCacheService::searchNamespace()`'s exact request shape.
+   **Implemented and live-verified**: a real embed call against the actual
+   Ollama host returned a 768-dim vector, and a real Upstash Vector query
+   against the live index succeeded (0 matches, confirmed correct via the
+   index's own `/info` endpoint — the `transactions` namespace has no
+   vectors yet in this dev environment, so an empty result is the right
+   answer, not a bug).
 4. **`online/judge.py`** — LLM-as-judge, reserved for the ambiguous tail
    flagged by layers 1–3. Best-effort only, behind a circuit breaker: try
    remote Ollama (over Tailscale) → on failure/timeout fall back to Gemini
@@ -173,10 +181,16 @@ avoids reproducing that ordering.
 calling real systems-under-test (same style as `observability/_env.py`):
 `SYNAPSE_L4_BASE_URL`, `SENTINEL_L7_MCP_URL`, `OLLAMA_JUDGE_HOST`/
 `OLLAMA_JUDGE_MODEL` (remote, over Tailscale — LLM-as-judge only),
-`OLLAMA_EMBEDDING_HOST`/`OLLAMA_EMBEDDING_MODEL` (local — mirrors
-Sentinel-L7's own embedding host, a deliberately different machine from
-the judge's), and `GEMINI_API_KEY`/`GEMINI_FLASH_URL` (same env var names
-Sentinel-L7 uses, so one value covers both services).
+`OLLAMA_URL`/`OLLAMA_EMBEDDING_MODEL` (same env var names as Sentinel-L7's
+own embedding config — in this environment both `OLLAMA_JUDGE_HOST` and
+`OLLAMA_URL` happen to point at the same Tailscale host, since one Ollama
+instance serves both the judge and embedding models here, but they're
+independent settings), `GEMINI_API_KEY`/`GEMINI_FLASH_URL` (same env var
+names Sentinel-L7 uses, so one value covers both services), and
+`UPSTASH_VECTOR_REST_URL`/`UPSTASH_VECTOR_REST_TOKEN`/
+`UPSTASH_VECTOR_THRESHOLD` (same env var names and default threshold as
+Sentinel-L7's `config/services.php` — no default URL/token, since those
+are account-specific secrets).
 
 ## Development
 

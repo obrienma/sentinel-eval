@@ -14,3 +14,8 @@ wheels/
 
 # Local Claude Code settings
 .claude/
+
+# Local secrets — never commit real credentials
+.env
+.env.*
+!.env.example

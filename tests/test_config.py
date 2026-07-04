@@ -24,13 +24,20 @@ def test_ollama_judge_host_and_model_defaults(monkeypatch):
 
 
 def test_ollama_embedding_host_and_model_defaults_differ_from_judge(monkeypatch):
-    monkeypatch.delenv("OLLAMA_EMBEDDING_HOST", raising=False)
+    monkeypatch.delenv("OLLAMA_URL", raising=False)
     monkeypatch.delenv("OLLAMA_EMBEDDING_MODEL", raising=False)
     assert config.ollama_embedding_host() == "http://localhost:11434"
-    assert config.ollama_embedding_model() == "nomic-embed-text:v1.5"
-    # Judge and embedding hosts must never accidentally collapse to the same
-    # value — they're different machines serving different purposes.
+    assert config.ollama_embedding_model() == "nomic-embed-text"
+    # The two *code-level defaults* differ (a real deployment may still
+    # point both at the same host, as this dev environment currently does —
+    # see config.py's module docstring). What must never happen is the two
+    # settings silently collapsing into one shared variable in code.
     assert config.ollama_embedding_host() != config.ollama_judge_host()
+
+
+def test_ollama_embedding_host_env_var_matches_sentinel_l7_convention(monkeypatch):
+    monkeypatch.setenv("OLLAMA_URL", "http://shared-ollama.internal:11434")
+    assert config.ollama_embedding_host() == "http://shared-ollama.internal:11434"
 
 
 def test_gemini_api_key_reads_env(monkeypatch):
@@ -46,3 +53,19 @@ def test_gemini_flash_url_default_matches_sentinel_l7_convention(monkeypatch):
         "https://generativelanguage.googleapis.com/v1beta/models/"
         "gemini-2.0-flash:generateContent"
     )
+
+
+def test_upstash_vector_url_and_token_have_no_default(monkeypatch):
+    monkeypatch.delenv("UPSTASH_VECTOR_REST_URL", raising=False)
+    monkeypatch.delenv("UPSTASH_VECTOR_REST_TOKEN", raising=False)
+    assert config.upstash_vector_url() is None
+    assert config.upstash_vector_token() is None
+
+
+def test_upstash_vector_similarity_threshold_default_matches_sentinel_l7(monkeypatch):
+    monkeypatch.delenv("UPSTASH_VECTOR_THRESHOLD", raising=False)
+    assert config.upstash_vector_similarity_threshold() == 0.90
+
+
+def test_upstash_vector_transactions_namespace_matches_sentinel_l7_constant():
+    assert config.upstash_vector_transactions_namespace() == "transactions"

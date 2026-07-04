@@ -4,13 +4,24 @@ Same env-var-with-default pattern as observability/_env.py — deliberately
 not pydantic-settings, to keep one config style across the codebase rather
 than introducing a second one for this narrower need.
 
-OLLAMA_JUDGE_* and OLLAMA_EMBEDDING_* are separate hosts on purpose: the
-judge calls a remote Ollama over Tailscale (partner-owned host, LLM-as-judge
-duty), while the embedding call goes to the local Ollama Sentinel-L7 itself
-uses for nomic-embed-text (see docs/adr/0001-standalone-module.md,
-"Embedding dimension consistency"). Conflating the two would point the
-embedding call at a host that was never migrated to nomic-embed-text and
-was never meant to serve embeddings at all.
+OLLAMA_JUDGE_* and OLLAMA_URL/OLLAMA_EMBEDDING_MODEL are independent
+settings on purpose, even though in this environment they currently
+resolve to the same Tailscale host (100.82.223.70) — one Ollama instance
+happens to serve both the judge model (qwen3.5) and the embedding model
+(nomic-embed-text) here. The settings stay separate because the *roles*
+are distinct (LLM-as-judge vs. Sentinel-L7's embedding driver, see
+docs/adr/0001-standalone-module.md "Embedding dimension consistency") and
+nothing guarantees they'll always be co-located — conflating them into one
+setting would break the moment Sentinel-L7's embedding host and the
+judge's host diverge onto separate machines.
+
+OLLAMA_URL and OLLAMA_EMBEDDING_MODEL reuse Sentinel-L7's exact env var
+names and defaults (config/services.php: `env('OLLAMA_URL',
+'http://localhost:11434')`, `env('OLLAMA_EMBEDDING_MODEL',
+'nomic-embed-text')`) — same reasoning as GEMINI_API_KEY below: one shared
+value covers both services in a local dev environment, and drift between
+"what sentinel-eval assumes" and "what Sentinel-L7 actually runs" is
+exactly the failure mode ADR-0001 warns about for this layer.
 """
 
 from __future__ import annotations
@@ -35,11 +46,12 @@ def ollama_judge_model() -> str:
 
 
 def ollama_embedding_host() -> str:
-    return os.environ.get("OLLAMA_EMBEDDING_HOST", "http://localhost:11434").rstrip("/")
+    # Env var name matches Sentinel-L7's OLLAMA_URL exactly (config/services.php).
+    return os.environ.get("OLLAMA_URL", "http://localhost:11434").rstrip("/")
 
 
 def ollama_embedding_model() -> str:
-    return os.environ.get("OLLAMA_EMBEDDING_MODEL", "nomic-embed-text:v1.5")
+    return os.environ.get("OLLAMA_EMBEDDING_MODEL", "nomic-embed-text")
 
 
 def gemini_api_key() -> str | None:
@@ -54,3 +66,28 @@ def gemini_flash_url() -> str:
         "GEMINI_FLASH_URL",
         "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent",
     )
+
+
+# Upstash Vector — same env var names as Sentinel-L7's config/services.php,
+# no default URL/token (account-specific secrets, never guessable/safe to
+# default). similarity_threshold's default (0.90) matches
+# config/services.php's own env() fallback exactly.
+
+
+def upstash_vector_url() -> str | None:
+    return os.environ.get("UPSTASH_VECTOR_REST_URL")
+
+
+def upstash_vector_token() -> str | None:
+    return os.environ.get("UPSTASH_VECTOR_REST_TOKEN")
+
+
+def upstash_vector_similarity_threshold() -> float:
+    return float(os.environ.get("UPSTASH_VECTOR_THRESHOLD", "0.90"))
+
+
+def upstash_vector_transactions_namespace() -> str:
+    # Matches TransactionProcessorService::NAMESPACE in sentinel-l7 exactly —
+    # not "default" (an earlier, looser reading of the ADR text assumed
+    # that name; the real constant is "transactions").
+    return "transactions"
