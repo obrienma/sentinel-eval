@@ -9,7 +9,144 @@ contract described below. See
 [`docs/adr/0001-standalone-module.md`](docs/adr/0001-standalone-module.md)
 for the full design rationale.
 
-## The prediction contract
+---
+
+```mermaid
+flowchart LR
+    subgraph Offline["Offline (ground truth)"]
+        F[Fixture JSON] --> H[run_eval]
+        H --> R[EvalReport]
+    end
+    subgraph Online["Online (unlabeled traffic)"]
+        P[EvalPrediction] --> L1[heuristics]
+        L1 -->|flagged| L2[disagreement]
+        L1 -->|flagged| L3[consistency]
+        L1 -->|flagged| L4[judge]
+        L2 --> O[OnlineScoringResult]
+        L3 --> O
+        L4 --> O
+    end
+    CLI[sentinel-eval CLI] --> H
+```
+
+---
+
+## 📋 Contents
+
+- [📋 Contents](#-contents)
+- [🧰 Stack](#-stack)
+- [🚀 Running the Project](#-running-the-project)
+  - [✅ Prerequisites](#-prerequisites)
+  - [⚡ Quick Start](#-quick-start)
+  - [📦 CLI Reference](#-cli-reference)
+- [🏗️ Architecture](#️-architecture)
+  - [📐 The Prediction Contract](#-the-prediction-contract)
+  - [🔀 Offline vs Online Evaluation](#-offline-vs-online-evaluation)
+  - [🔌 Plugging in a New System-Under-Test](#-plugging-in-a-new-system-under-test)
+- [📊 Benchmark Results](#-benchmark-results)
+- [🔭 Observability](#-observability)
+- [🔧 Configuration](#-configuration)
+- [📚 Docs](#-docs)
+- [🗺️ Roadmap](#️-roadmap)
+  - [📋 Planned](#-planned)
+  - [🐛 Known Issues](#-known-issues)
+  - [🏁 Completed (Phase 3)](#-completed-phase-3)
+
+
+## 🧰 Stack
+
+**🐍 Core**
+
+- **Python 3.12 + `uv`:** dependency management and the venv, same role `composer`/`npm` play in the sibling Sentinel-L7/Synapse-L4 repos.
+- **Pydantic 2.9:** the entire cross-system contract (`EvalPrediction`, `EvalDataset`, `EvalReport`) is typed models, not dicts — see [📐 The Prediction Contract](#-the-prediction-contract).
+
+**🌐 Integrations**
+
+- **httpx:** adapters speak MCP-over-HTTP directly to Sentinel-L7's `/mcp` endpoint and REST to Synapse-L4's `/ingest` — no service SDK, no shared import boundary (ADR-0001).
+- **Ollama + Gemini Flash + Upstash Vector:** the online layers' real infrastructure — Ollama for embeddings and the LLM-as-judge, Gemini Flash as the judge's fallback, Upstash Vector for the embedding-consistency layer.
+
+**🔭 Observability**
+
+- **OpenTelemetry:** traces + metrics exported via OTLP/HTTP to the same Collector endpoint Sentinel-L7/Synapse-L4/EventHorizon export to.
+
+**🧪 Testing**
+
+- **pytest + respx:** every external call in the automated suite is mocked at the HTTP boundary — this repo's suite never hits a real API, matching the "never hit real external APIs in tests" rule.
+
+
+## 🚀 Running the Project
+
+### ✅ Prerequisites
+
+- **Python 3.12+** with `uv`
+- Nothing else for `uv sync` / `uv run pytest` — every external call in the automated suite is mocked at the HTTP boundary.
+- **Optional, live verification only:** a running Sentinel-L7 and/or Synapse-L4 instance, a reachable Ollama host (embedding + judge), a Gemini API key (judge fallback), Upstash Vector credentials (consistency layer) — see [🔧 Configuration](#-configuration).
+
+> [!NOTE]
+> Developed on **WSL2 (Ubuntu)**. Other environments may work but are untested.
+
+### ⚡ Quick Start
+
+```bash
+# 1. Install dependencies
+uv sync
+
+# 2. Run the automated test suite (no live services required)
+uv run pytest
+
+# 3. Score a fixture against a real Sentinel-L7 instance
+uv run sentinel-eval --system sentinel-l7 \
+  --fixture tests/fixtures/sentinel_l7_ground_truth.json \
+  --driver ollama --binary --limit 25
+```
+
+> [!TIP]
+> For the full live-verification walkthrough — starting local
+> Sentinel-L7/Synapse-L4 servers, exercising every online layer by hand,
+> expected output for each step — see
+> [`docs/DEV_GETTING_STARTED.md`](docs/DEV_GETTING_STARTED.md).
+
+### 📦 CLI Reference
+
+`sentinel-eval` (a `[project.scripts]` entry point,
+`sentinel_eval.cli:main`) runs the offline harness from the shell against a
+real adapter — no code required for a one-off scoring run. There is
+deliberately no CLI surface for the online path
+(`online.pipeline.evaluate_item`) — it's meant to be wired into a caller's
+own sampling/production loop (which providers/embed_fn/judge to pass in is
+a per-deployment decision), not run as a one-shot command the way a
+labeled-fixture score is.
+
+| Command / Flag | Description |
+| --- | --- |
+| `uv run pytest` | Run the full automated test suite (mocked HTTP boundary, no live services required) |
+| `uv run sentinel-eval --system {sentinel-l7,synapse-l4}` | Score a fixture against a real adapter (required) |
+| `--fixture PATH` | Labeled `EvalDataset` JSON whose `input` shape matches the chosen adapter's contract (required) |
+| `--driver {gemini,openrouter,ollama}` | Sentinel-L7 only — force a specific `ComplianceManager` driver via the per-request override, bypassing the semantic cache |
+| `--binary` | Sentinel-L7 only — collapse a predicted label to `'high'` unless it's exactly `'low'`, matching `TransactionProcessorService::gradeAiResult()` |
+| `--url URL` | Override the configured base/MCP URL (defaults to `config.py`'s env-var-with-default) |
+| `--limit N` | Only score the first N examples of the fixture |
+| `--json` | Print the `EvalReport` as JSON instead of a text table |
+
+A connection failure prints a one-line error to stderr and exits `1`
+rather than a raw traceback.
+
+**Live-verified**: run against a temporarily-started local Sentinel-L7
+server with `--driver ollama` (bypassing the semantic cache) — a live item
+scored correctly (`accuracy: 1/1 (100.0%)`). A larger batch surfaced a real
+timeout on a slower Ollama response (a single driver-override call has
+been observed to take anywhere from ~4.7s to timing out past the
+adapter's default 10s) — the CLI's
+`httpx.ConnectError`/`TimeoutException` handling caught it and exited `1`
+with a friendly message rather than crashing, exercising that path against
+a genuine failure, not a mock. Full steps, exact commands, and expected
+output for every one of these live checks are in
+[`docs/DEV_GETTING_STARTED.md`](docs/DEV_GETTING_STARTED.md).
+
+
+## 🏗️ Architecture
+
+### 📐 The Prediction Contract
 
 Every system-under-test is a callable that takes a raw input dict and
 returns an `EvalPrediction`:
@@ -32,9 +169,9 @@ system-under-test wrapper maps its own domain output into `label`; the
 harness only ever compares `label` against ground truth for whichever
 system it's currently scoring.
 
-## Offline vs. online evaluation
+### 🔀 Offline vs Online Evaluation
 
-### Offline (ground truth) — `sentinel_eval.harness.run_eval`
+#### Offline (ground truth) — `sentinel_eval.harness.run_eval`
 
 Runs a labeled dataset through a system-under-test and scores its
 predictions against known-correct labels: precision/recall/F1 per label,
@@ -68,107 +205,84 @@ against it should collapse `medium`/`critical` into `'high'` the same way
 (`is_threat = risk_level != 'low'`), rather than penalizing a correctly-
 caught threat just because it landed on a different severity than `'high'`.
 
-### Online (unlabeled, realistic traffic) — `sentinel_eval.online.*`
+#### Online (unlabeled, realistic traffic) — `sentinel_eval.online.*`
 
 Production/sampled traffic has no ground truth, so it's scored by a
 layered, cost-ordered pipeline instead. Each layer is more expensive (and
 more speculative) than the last, and later layers are only meant to run on
 what earlier layers flag as ambiguous — not on every item.
 
-1. **`online/heuristics.py`** — rule-based checks (confidence thresholds,
-   field-contradiction checks). Free, deterministic, always available.
-   **Implemented.**
-2. **`online/disagreement.py`** — cross-provider/cross-run disagreement
-   (e.g. Sentinel-L7's dual Gemini/OpenRouter `ComplianceDriver`). Reuses
-   infrastructure the system-under-test already has. **Implemented and
-   live-verified.** `score_disagreement()` calls each named provider with
-   the same input and compares labels; a provider call that raises is
-   captured in `errors_by_provider` rather than dropped, and `agreed` is
-   only `True` when every provider answered with the exact same label —
-   an error makes agreement unknowable, not automatically true. Uses
-   Sentinel-L7's per-request driver override (Phase 3 step 6):
-   `adapters.sentinel_l7.make_sentinel_l7_system_under_test(driver=...)`
-   builds one callable per provider, each bypassing the semantic cache so
-   the comparison is never contaminated by a different provider's cached
-   verdict. Live-verified against a real local Sentinel-L7 server: Ollama
-   returned a real verdict; OpenRouter and Gemini both genuinely failed
-   (OpenRouter's configured free model was retired upstream — a 404 "No
-   endpoints found"; Gemini hit the same free-tier quota exhaustion seen
-   validating the judge layer) and both were correctly surfaced in
-   `errors_by_provider` rather than silently swallowed or crashing the
-   comparison — exercising the error path against real external failures,
-   not just mocks.
-3. **`online/consistency.py`** — embedding-based consistency against
-   Upstash Vector's `transactions` namespace. `make_ollama_embed_fn()`
-   calls Sentinel-L7's own local Ollama host/model/task-prefix convention
-   exactly (verified against `OllamaEmbeddingDriver::embed()` directly),
-   never a hardcoded model — Sentinel-L7's live config has
-   `SENTINEL_EMBEDDING_DRIVER=ollama`, 768-dim `nomic-embed-text:v1.5`, and
-   embedding independently here would cause Upstash dimension-mismatch
-   errors the moment the two diverge. `query_upstash_vector()` mirrors
-   `VectorCacheService::searchNamespace()`'s exact request shape.
-   **Implemented and live-verified**: a real embed call against the actual
-   Ollama host returned a 768-dim vector, and a real Upstash Vector query
-   against the live index succeeded (0 matches, confirmed correct via the
-   index's own `/info` endpoint — the `transactions` namespace has no
-   vectors yet in this dev environment, so an empty result is the right
-   answer, not a bug).
-4. **`online/judge.py`** — LLM-as-judge, reserved for the ambiguous tail
-   flagged by layers 1–3. Best-effort only, behind a circuit breaker: try
-   remote Ollama (over Tailscale) → on failure/timeout fall back to Gemini
-   Flash free tier → on failure fall back to heuristics-only. Judge
-   availability is tracked as its own metric
-   (`JudgeMetrics.pct_scored_by_judge`) rather than hidden — a judge that
-   silently falls back on every call is itself a signal worth seeing.
-   **Implemented and live-verified.** Both calls force strict-JSON output
-   at the API level (Ollama's `"format": "json"`, Gemini's
-   `generationConfig.responseMimeType`) and load their shared prompt from
-   `prompts/judge.txt` (versioned in `prompts/judge.md`, mirroring
-   Sentinel-L7's `prompts/*.md`+`*.txt` convention) rather than hardcoding
-   the prompt text inline. A real call against the Tailscale Ollama host
-   (`qwen3.5:9b-q4_K_M`) returned a genuine verdict in ~12s; a real call to
-   Gemini Flash correctly raised `httpx.HTTPStatusError` on a live 429
-   (free-tier quota exhausted), confirming the fail-through contract holds
-   against a real failure, not just a mocked one.
+| Layer | File | Status | Purpose |
+| --- | --- | --- | --- |
+| 1. Heuristics | `online/heuristics.py` | ✅ Implemented | Rule-based checks (confidence thresholds, field-contradiction checks). Free, deterministic, always available. |
+| 2. Disagreement | `online/disagreement.py` | ✅ Implemented, live-verified | Cross-provider/cross-run disagreement (e.g. Sentinel-L7's dual Gemini/OpenRouter `ComplianceDriver`). |
+| 3. Consistency | `online/consistency.py` | ✅ Implemented, live-verified | Embedding-based consistency against Upstash Vector's `transactions` namespace. |
+| 4. Judge | `online/judge.py` | ✅ Implemented, live-verified, validated | LLM-as-judge behind a circuit breaker (Ollama → Gemini Flash → heuristics-only), reserved for the ambiguous tail. |
 
-   This eval judge is distinct from Sentinel-L7's `prompts/synapse-l4-judge.md`,
-   which scores `anomaly_score` for production routing — different purpose,
-   different consumer. Before this judge is used to score unlabeled
-   traffic, its verdicts should be validated against a labeled dataset via
-   the offline `run_eval` path first. An early attempt against
-   `tests/fixtures/compliance_dataset.json` scored only 6.7% accuracy, but
-   inspection showed the judge reasoning correctly and just answering in
-   the *wrong taxonomy* — that fixture's `raw_output` is Synapse-shaped
-   (`status`/`anomaly_score`) while its `expected_label` is Sentinel's
-   `risk_level` vocabulary, a mismatch invisible to `run_eval()` (which
-   never inspects `raw_output`, only compares `label`) until something
-   reasoned over the raw fields directly. **Validated** as of Step 8 against
-   the taxonomy-consistent `sentinel_l7_ground_truth.json` fixture instead
-   — see [Benchmark results](#benchmark-results) below.
+**2. Disagreement** — reuses infrastructure the system-under-test already
+has. `score_disagreement()` calls each named provider with the same input
+and compares labels; a provider call that raises is captured in
+`errors_by_provider` rather than dropped, and `agreed` is only `True` when
+every provider answered with the exact same label — an error makes
+agreement unknowable, not automatically true. Uses Sentinel-L7's
+per-request driver override (Phase 3 step 6):
+`adapters.sentinel_l7.make_sentinel_l7_system_under_test(driver=...)`
+builds one callable per provider, each bypassing the semantic cache so the
+comparison is never contaminated by a different provider's cached verdict.
+Live-verified against a real local Sentinel-L7 server: Ollama returned a
+real verdict; OpenRouter and Gemini both genuinely failed (OpenRouter's
+configured free model was retired upstream — a 404 "No endpoints found";
+Gemini hit the same free-tier quota exhaustion seen validating the judge
+layer) and both were correctly surfaced in `errors_by_provider` rather
+than silently swallowed or crashing the comparison — exercising the error
+path against real external failures, not just mocks.
 
-## Benchmark results
+**3. Consistency** — `make_ollama_embed_fn()` calls Sentinel-L7's own
+local Ollama host/model/task-prefix convention exactly (verified against
+`OllamaEmbeddingDriver::embed()` directly), never a hardcoded model —
+Sentinel-L7's live config has `SENTINEL_EMBEDDING_DRIVER=ollama`, 768-dim
+`nomic-embed-text:v1.5`, and embedding independently here would cause
+Upstash dimension-mismatch errors the moment the two diverge.
+`query_upstash_vector()` mirrors `VectorCacheService::searchNamespace()`'s
+exact request shape. **Implemented and live-verified**: a real embed call
+against the actual Ollama host returned a 768-dim vector, and a real
+Upstash Vector query against the live index succeeded (0 matches,
+confirmed correct via the index's own `/info` endpoint — the
+`transactions` namespace has no vectors yet in this dev environment, so an
+empty result is the right answer, not a bug).
 
-Live-verification runs against real services, not mocks. The Journal column
-links to the entry with full methodology (sample composition, seed, raw
-per-item output).
+**4. Judge** — best-effort only, behind a circuit breaker: try remote
+Ollama (over Tailscale) → on failure/timeout fall back to Gemini Flash
+free tier → on failure fall back to heuristics-only. Judge availability is
+tracked as its own metric (`JudgeMetrics.pct_scored_by_judge`) rather than
+hidden — a judge that silently falls back on every call is itself a
+signal worth seeing. Both calls force strict-JSON output at the API level
+(Ollama's `"format": "json"`, Gemini's `generationConfig.responseMimeType`)
+and load their shared prompt from `prompts/judge.txt` (versioned in
+`prompts/judge.md`, mirroring Sentinel-L7's `prompts/*.md`+`*.txt`
+convention) rather than hardcoding the prompt text inline. A real call
+against the Tailscale Ollama host (`qwen3.5:9b-q4_K_M`) returned a genuine
+verdict in ~12s; a real call to Gemini Flash correctly raised
+`httpx.HTTPStatusError` on a live 429 (free-tier quota exhausted),
+confirming the fail-through contract holds against a real failure, not
+just a mocked one.
 
-| Date | Fixture | System | Sample | Strict accuracy | Binary accuracy | Notes | Journal |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 2026-07-04 | `sentinel_l7_ground_truth.json` | Sentinel-L7 (`driver=ollama`, cache bypassed) | 25 live / 200 (all 10 `high` + 15 random `low`, seed 42) | 84% | **92%** | First attempt (no driver override) scored 52% — a real semantic-cache amplification bug, not a model failure; tracked as a Known Issue in sentinel-l7's own README. | [step 8](docs/journal/sentinel-eval-2026-07-04T1720-ground-truth-export-and-judge-validation.md) |
-| 2026-07-04 | `sentinel_l7_ground_truth.json` | Judge (`qwen3.5:9b-q4_K_M` via Ollama) | Same 25, called unconditionally (bypassing the heuristic gate) | 80% | **92%** | 2/25 verdicts were non-taxonomy tokens (`"reject"`, `"correct"`) instead of a label — a prompt-following gap, not yet fixed. | [step 8](docs/journal/sentinel-eval-2026-07-04T1720-ground-truth-export-and-judge-validation.md) |
-| 2026-07-04 | `compliance_dataset.json` | Judge (`qwen3.5:9b-q4_K_M` via Ollama) | All 15 | 6.7% | — | Fixture defect, not a judge failure: `raw_output` is Synapse-shaped, `expected_label` is Sentinel-shaped — the judge answered correctly in the wrong taxonomy. Superseded by the row above; kept here as a documented false alarm. | [step 5](docs/journal/sentinel-eval-2026-07-04T1512-judge-layer.md) |
+This eval judge is distinct from Sentinel-L7's
+`prompts/synapse-l4-judge.md`, which scores `anomaly_score` for production
+routing — different purpose, different consumer. Before this judge is
+used to score unlabeled traffic, its verdicts should be validated against
+a labeled dataset via the offline `run_eval` path first. An early attempt
+against `tests/fixtures/compliance_dataset.json` scored only 6.7%
+accuracy, but inspection showed the judge reasoning correctly and just
+answering in the *wrong taxonomy* — that fixture's `raw_output` is
+Synapse-shaped (`status`/`anomaly_score`) while its `expected_label` is
+Sentinel's `risk_level` vocabulary, a mismatch invisible to `run_eval()`
+(which never inspects `raw_output`, only compares `label`) until something
+reasoned over the raw fields directly. **Validated** as of Phase 3 step 8
+against the taxonomy-consistent `sentinel_l7_ground_truth.json` fixture
+instead — see [📊 Benchmark Results](#-benchmark-results) below.
 
-**Strict vs. binary**: `sentinel_l7_ground_truth.json`'s `expected_label` is
-only ever `'high'`/`'low'` (ground truth pre-AI knows only a boolean threat
-flag — see "Offline (ground truth)" above). *Strict* compares the predicted
-label string exactly; *binary* collapses `medium`/`high`/`critical` to
-`'high'` first (`is_threat = risk_level != 'low'`, matching
-`TransactionProcessorService::gradeAiResult()`). Binary is the number that
-reflects what this ground truth can actually justify claiming — a
-`critical` verdict on a real threat is a correct catch, not a miss, and
-strict accuracy alone would misrepresent that as a failure.
-
-## Plugging in a new system-under-test
+### 🔌 Plugging in a New System-Under-Test
 
 Two real adapters exist under `src/sentinel_eval/adapters/`:
 
@@ -212,7 +326,32 @@ To wire up a new one:
    you actually pass in. A layer you don't wire up is skipped, not an
    error.
 
-## Observability
+
+## 📊 Benchmark Results
+
+Live-verification runs against real services, not mocks. The Journal column
+links to the entry with full methodology (sample composition, seed, raw
+per-item output).
+
+| Date | Fixture | System | Sample | Strict accuracy | Binary accuracy | Notes | Journal |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-07-04 | `sentinel_l7_ground_truth.json` | Sentinel-L7 (`driver=ollama`, cache bypassed) | 25 live / 200 (all 10 `high` + 15 random `low`, seed 42) | 84% | **92%** | First attempt (no driver override) scored 52% — a real semantic-cache amplification bug, not a model failure; tracked as a Known Issue in sentinel-l7's own README. | [step 8](docs/journal/sentinel-eval-2026-07-04T1720-ground-truth-export-and-judge-validation.md) |
+| 2026-07-04 | `sentinel_l7_ground_truth.json` | Judge (`qwen3.5:9b-q4_K_M` via Ollama) | Same 25, called unconditionally (bypassing the heuristic gate) | 80% | **92%** | 2/25 verdicts were non-taxonomy tokens (`"reject"`, `"correct"`) instead of a label — a prompt-following gap, not yet fixed. | [step 8](docs/journal/sentinel-eval-2026-07-04T1720-ground-truth-export-and-judge-validation.md) |
+| 2026-07-04 | `compliance_dataset.json` | Judge (`qwen3.5:9b-q4_K_M` via Ollama) | All 15 | 6.7% | — | Fixture defect, not a judge failure: `raw_output` is Synapse-shaped, `expected_label` is Sentinel-shaped — the judge answered correctly in the wrong taxonomy. Superseded by the row above; kept here as a documented false alarm. | [step 5](docs/journal/sentinel-eval-2026-07-04T1512-judge-layer.md) |
+
+**Strict vs. binary**: `sentinel_l7_ground_truth.json`'s `expected_label` is
+only ever `'high'`/`'low'` (ground truth pre-AI knows only a boolean threat
+flag — see [🔀 Offline vs Online Evaluation](#-offline-vs-online-evaluation)
+above). *Strict* compares the predicted label string exactly; *binary*
+collapses `medium`/`high`/`critical` to `'high'` first
+(`is_threat = risk_level != 'low'`, matching
+`TransactionProcessorService::gradeAiResult()`). Binary is the number that
+reflects what this ground truth can actually justify claiming — a
+`critical` verdict on a real threat is a correct catch, not a miss, and
+strict accuracy alone would misrepresent that as a failure.
+
+
+## 🔭 Observability
 
 Every layer function and `evaluate_item` are wrapped in `@traced_layer(...)`
 (`sentinel_eval.observability.decorators`), which is both a decorator and a
@@ -247,7 +386,8 @@ handler, after the app and its routes are already constructed) is the
 suspected cause of its trace-fragmentation bug, and this repo deliberately
 avoids reproducing that ordering.
 
-## Configuration
+
+## 🔧 Configuration
 
 `src/sentinel_eval/config.py` holds env-var-with-default settings for
 calling real systems-under-test (same style as `observability/_env.py`):
@@ -264,266 +404,46 @@ names Sentinel-L7 uses, so one value covers both services), and
 Sentinel-L7's `config/services.php` — no default URL/token, since those
 are account-specific secrets).
 
-## CLI
 
-`sentinel-eval` (a `[project.scripts]` entry point, `sentinel_eval.cli:main`)
-runs the offline harness from the shell against a real adapter — no code
-required for a one-off scoring run:
+## 📚 Docs
 
-```bash
-uv run sentinel-eval \
-  --system sentinel-l7 \
-  --fixture tests/fixtures/sentinel_l7_ground_truth.json \
-  --driver ollama --binary --limit 25
-```
+| File | Contents |
+| --- | --- |
+| [README.md](README.md) | Project overview |
+| [docs/adr/0001-standalone-module.md](docs/adr/0001-standalone-module.md) | Why sentinel-eval is standalone, not embedded in Sentinel-L7 |
+| [docs/DEV_GETTING_STARTED.md](docs/DEV_GETTING_STARTED.md) | Full live-verification walkthrough — manual tests against real Sentinel-L7/Synapse-L4/online-layer infrastructure |
+| [docs/journal/](docs/journal/) | Engineering journal — one entry per phase/step |
+| [docs/probes/](docs/probes/) | Paired Anki spaced-repetition probe cards, one file per journal entry |
+| [prompts/judge.md](prompts/judge.md) | Judge prompt — versioned Markdown, changelog, `Used by:` list |
 
-`--system` selects `sentinel-l7` or `synapse-l4`; `--fixture` must be an
-`EvalDataset` JSON whose `input` shape matches that system's adapter
-contract (`sentinel_l7_ground_truth.json` for Sentinel-L7 —
-`compliance_dataset.json` is *not* adapter-compatible, see its note under
-"Benchmark results" above). `--url` overrides the configured base/MCP URL;
-`--driver` (Sentinel-L7 only) forces the per-request `ComplianceManager`
-override; `--binary` (Sentinel-L7 only) collapses a predicted label to
-`'high'` unless it's exactly `'low'`, matching
-`TransactionProcessorService::gradeAiResult()`; `--limit` scores only the
-first N examples; `--json` prints the `EvalReport` as JSON instead of a
-text table. A connection failure prints a one-line error to stderr and
-exits `1` rather than a raw traceback.
 
-There is deliberately no CLI surface for the online path
-(`online.pipeline.evaluate_item`) — it's meant to be wired into a caller's
-own sampling/production loop (which providers/embed_fn/judge to pass in is
-a per-deployment decision), not run as a one-shot command the way a
-labeled-fixture score is.
+## 🗺️ Roadmap
 
-**Live-verified**: run against a temporarily-started local Sentinel-L7
-server with `--driver ollama` (bypassing the semantic cache) — a single
-live item scored correctly (`accuracy: 1/1 (100.0%)`). A `--limit 5` batch
-surfaced a real timeout on a slower Ollama response (a single
-driver-override call has been observed to take 8–9s against the real
-model, close to the adapter's default 10s per-request timeout) — the CLI's
-`httpx.ConnectError`/`TimeoutException` handling caught it and exited `1`
-with a friendly message rather than crashing, exercising that path against
-a genuine failure, not a mock.
+### 📋 Planned
 
-## Development
+- [ ] **CLI surface for the online layers** — deliberately deferred; wiring providers/`embed_fn`/judge is a per-deployment decision (see [📦 CLI Reference](#-cli-reference)), not a one-shot command.
+- [ ] **Judge prompt-following fix** — `qwen3.5` occasionally emits non-taxonomy tokens (`"reject"`, `"correct"`) instead of a label (2/25 in the step 8 live sample); flagged in `prompts/judge.txt`, not yet fixed.
+- [ ] **A Synapse-L4-shaped fixture for `tests/fixtures/`** — no ground truth exists yet for Axiom extraction correctness (ADR-0001 flags this as unsolved, out of scope for Phase 3).
 
-```bash
-uv sync                 # install dependencies
-uv run pytest           # run the test suite
-```
+### 🐛 Known Issues
 
-Running the test suite without a local OTel Collector at
-`localhost:4318` is expected to print harmless "connection refused" retry
-warnings on process exit — the same "additive observability" posture
-Synapse-L4 already uses (instrumentation degrades gracefully; it never
-affects correctness). No timeout override is configured, matching
-EventHorizon's and Synapse-L4's exporters, both of which also rely on SDK
-defaults.
+- **Ollama driver-override latency can exceed the adapter's default 10s timeout.** A single Sentinel-L7 `--driver ollama` call has been observed to take anywhere from ~4.7s to past 10s against the real model — occasionally crossing the adapter's default per-request timeout and surfacing as a genuine `httpx.TimeoutException`. Not a bug in the CLI's error handling, which catches it correctly; see `docs/DEV_GETTING_STARTED.md`.
+- **`compliance_dataset.json` isn't adapter-compatible.** Its `input` shape doesn't match either adapter's real request contract (Synapse-shaped fields flattened, missing the `source_id`/`payload` envelope). Use `sentinel_l7_ground_truth.json` for real adapter runs; `compliance_dataset.json` is retained only as a hand-written judge-prompt smoke fixture.
+- **Sentinel-L7's own semantic cache can amplify a single wrong verdict for narrow-profile merchants.** Not a sentinel-eval bug, but it affects online-layer/CLI runs against Sentinel-L7 whenever `--driver` isn't forced — see Sentinel-L7's own README Known Issues.
 
-## Manual verification (live services)
+### 🏁 Completed (Phase 3)
 
-Everything below was actually run against real services to confirm it
-works, not just asserted — every command here was re-run while writing
-this section. Use it as the exhaustive step-by-step checklist for
-confirming a fresh checkout actually works end to end, not just that
-`pytest` is green.
+<details>
+<summary>🔍 View shipped steps...</summary>
 
-### 0. Setup
+1. Foundational `config.py` + `httpx` dependency
+2. Synapse-L4 HTTP adapter (`adapters/synapse_l4.py`)
+3. Sentinel-L7 MCP-over-HTTP adapter (`adapters/sentinel_l7.py`) — required a paired additive widening of Sentinel-L7's `TransactionProcessorService::process()`
+4. Embedding consistency layer (`online/consistency.py`) — live-verified against a real Ollama host and Upstash Vector index
+5. LLM-as-judge layer (`online/judge.py`, `prompts/judge.md`+`.txt`) — live-verified against real Ollama and Gemini Flash calls
+6. Sentinel-L7 per-request driver override (cross-repo, sentinel-l7 only — bypasses the semantic cache for fresh, cross-provider verdicts)
+7. Cross-provider disagreement layer (`online/disagreement.py`) — live-verified, including genuine external provider failures
+8. Ground-truth export command + taxonomy-consistent fixture (`sentinel_l7_ground_truth.json`) — closed the judge-validation gate (92% binary accuracy for both Sentinel-L7 and the judge)
+9. CLI entrypoint (`sentinel-eval` console script) — offline harness only, live-verified against a real local Sentinel-L7 server
 
-```bash
-uv sync
-```
-
-Env vars used below (all have dev-environment defaults in
-`src/sentinel_eval/config.py` — see [Configuration](#configuration)):
-`SENTINEL_L7_MCP_URL`, `SYNAPSE_L4_BASE_URL`, `OLLAMA_URL`,
-`OLLAMA_EMBEDDING_MODEL`, `OLLAMA_JUDGE_HOST`, `OLLAMA_JUDGE_MODEL`,
-`GEMINI_API_KEY`, `UPSTASH_VECTOR_REST_URL`, `UPSTASH_VECTOR_REST_TOKEN`.
-None are required just to run the automated test suite (step 1) — they
-only matter for the live steps below.
-
-### 1. Automated suite
-
-```bash
-uv run pytest -v
-```
-
-Expect all tests passing (70 as of the CLI step). The "connection refused"
-OTel warnings on exit are expected without a local Collector at
-`:4318` — see the note above.
-
-### 2. CLI against a real Sentinel-L7 server
-
-Requires a checked-out, configured Sentinel-L7 (`~/dev/sentinel-l7` in this
-environment — see that repo's own README/CLAUDE.md for its env setup:
-`GEMINI_API_KEY`, `OLLAMA_URL`, DB migrations, etc.).
-
-```bash
-# terminal 1 — from the sentinel-l7 checkout
-cd ~/dev/sentinel-l7
-php artisan serve --port=8080
-```
-
-```bash
-# terminal 2 — health check before trusting anything the CLI reports
-curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8080/mcp \
-  -X POST -H "Content-Type: application/json" \
-  -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"analyze-transaction","arguments":{"amount":10,"currency":"USD","merchant":"Test"}}}'
-# expect: 200
-```
-
-```bash
-# terminal 2 — from this repo, scoring one real example with the
-# driver override (bypasses the semantic cache so it's a fresh verdict)
-cd ~/dev/sentinel-eval
-SENTINEL_L7_MCP_URL=http://127.0.0.1:8080/mcp uv run sentinel-eval \
-  --system sentinel-l7 \
-  --fixture tests/fixtures/sentinel_l7_ground_truth.json \
-  --driver ollama --binary --limit 1 --json
-```
-
-Expect a JSON `EvalReport` with `"accuracy": 1.0` and one prediction whose
-`raw_output.source` is `"driver_override"`. **Observed real latency: a
-single driver-override call has taken anywhere from ~4.7s to timing out
-past the adapter's default 10s** — if you see
-`error: could not reach sentinel-l7 — timed out`, that's real Ollama
-latency variance, not a CLI bug; just re-run.
-
-Confirm the plain-text report path too, and try a larger sample:
-
-```bash
-uv run sentinel-eval --system sentinel-l7 \
-  --fixture tests/fixtures/sentinel_l7_ground_truth.json \
-  --driver ollama --limit 5
-```
-
-Note: omitting `--driver` lets Sentinel-L7 use its app-wide default and its
-semantic cache — repeated runs against a narrow-profile merchant can then
-return `cache_hit` for every item (a real amplification effect documented
-in [Benchmark results](#benchmark-results), not a CLI bug). Use `--driver`
-whenever you want a guaranteed fresh, cache-bypassing verdict.
-
-Confirm the error path by stopping the server (`Ctrl+C` in terminal 1)
-and re-running the same command:
-
-```bash
-uv run sentinel-eval --system sentinel-l7 \
-  --fixture tests/fixtures/sentinel_l7_ground_truth.json --limit 1
-echo "exit code: $?"
-```
-
-Expect stdout empty, stderr
-`error: could not reach sentinel-l7 — [Errno 111] Connection refused`,
-and exit code `1`.
-
-Stop the server for good afterward (`Ctrl+C`, or
-`pkill -f "php artisan serve --port=8080"`) — it's a temporary process for
-this verification only, not a persistent service.
-
-### 3. CLI against a real Synapse-L4 server
-
-Synapse-L4 needs a reachable Redis (`SENTINEL_REDIS_URL`) and an LLM key
-(`OPENAI_API_KEY` or `ANTHROPIC_API_KEY`) before it will even boot — see
-`~/dev/synapse-l4/.env.example`.
-
-```bash
-# terminal 1 — from the synapse-l4 checkout
-cd ~/dev/synapse-l4
-uv run fastapi dev main.py   # serves on :8000
-```
-
-```bash
-# terminal 2 — health check
-curl -s -X POST http://127.0.0.1:8000/ingest \
-  -H "Content-Type: application/json" \
-  -d '{"source_id": "manual-check-1", "payload": {"metric": "test"}}'
-```
-
-No fixture shaped for Synapse-L4's real `{source_id, payload}` contract
-ships in `tests/fixtures/` yet (`compliance_dataset.json`'s `input` is
-flattened, not that envelope) — write a one-off fixture to exercise this
-path:
-
-```bash
-cat > /tmp/synapse_smoke.json <<'EOF'
-{"examples": [{"input": {"source_id": "manual-1", "payload": {"metric": "test"}}, "expected_label": "nominal"}]}
-EOF
-
-# terminal 2 — from this repo
-cd ~/dev/sentinel-eval
-uv run sentinel-eval --system synapse-l4 \
-  --fixture /tmp/synapse_smoke.json --limit 1 --json
-```
-
-**Not yet live-verified in this environment** — Synapse-L4 wasn't running
-locally when its adapter (step 2 of the plan) was originally built or when
-this section was written; only the respx-mocked test suite has exercised
-this path so far. Treat this subsection as the script to run the first
-time a live Synapse-L4 instance is available, not a result already
-confirmed the way step 2 is.
-
-### 4. Online layers (no CLI surface — by design, see [CLI](#cli))
-
-These have no one-shot command; wiring them is a per-deployment decision.
-Run each snippet with `uv run python -c "..."` from this repo so the venv
-resolves correctly.
-
-**Embedding consistency** — needs `OLLAMA_URL` pointed at a host that
-actually has the embedding model pulled. In this dev environment the
-*default* `OLLAMA_URL` (`localhost:11434`) has no models pulled at all, and
-even the Tailscale host's model is tagged `nomic-embed-text:v1.5`, not the
-untagged `nomic-embed-text` `OLLAMA_EMBEDDING_MODEL` defaults to (a
-documented drift — see the plan's "Corrections discovered mid-plan"
-notes) — both must be overridden together or you'll hit a real `404 model
-not found`:
-
-```bash
-OLLAMA_URL=http://100.82.223.70:11434 \
-OLLAMA_EMBEDDING_MODEL=nomic-embed-text:v1.5 \
-uv run python -c "
-from sentinel_eval.online.consistency import make_ollama_embed_fn, query_upstash_vector
-embed = make_ollama_embed_fn()
-vector = embed('a \$500 purchase at a grocery store')
-print('embedding dim:', len(vector))            # expect 768
-print(query_upstash_vector(vector))              # UpstashVectorError if creds unset — expected
-"
-```
-
-**Disagreement** — needs a running local Sentinel-L7 (step 2 above):
-
-```bash
-uv run python -c "
-from sentinel_eval.adapters.sentinel_l7 import make_sentinel_l7_system_under_test
-from sentinel_eval.online.disagreement import score_disagreement
-providers = {
-    d: make_sentinel_l7_system_under_test(mcp_url='http://127.0.0.1:8080/mcp', driver=d)
-    for d in ('ollama',)   # add 'gemini'/'openrouter' if those keys/quota are live
-}
-result = score_disagreement({'amount': 500, 'currency': 'USD', 'merchant': 'Test'}, providers)
-print(result.agreed, result.labels_by_provider, result.errors_by_provider)
-"
-```
-
-Expect `True {'ollama': 'low'} {}` for a low-risk merchant. Adding
-`'gemini'`/`'openrouter'` to `providers` is expected to genuinely fail in
-this dev environment (retired free model / exhausted free-tier quota — see
-[Benchmark results](#benchmark-results)); a populated `errors_by_provider`
-for those keys is the correct, verified outcome, not a bug.
-
-**Judge** — needs `OLLAMA_JUDGE_HOST` reachable (defaults to the Tailscale
-host already used above):
-
-```bash
-uv run python -c "
-from sentinel_eval.models import EvalPrediction
-from sentinel_eval.online.judge import JudgeCircuitBreaker
-prediction = EvalPrediction(id='t1', raw_output={'risk_level': 'high'}, label='high', confidence=0.4)
-verdict = JudgeCircuitBreaker().judge(prediction, context='low confidence on a high verdict')
-print(verdict.source, verdict.verdict_label)
-"
-```
-
-Expect `JudgeSource.OLLAMA high` (or a similar taxonomy-consistent label)
-on success; a slow/unreachable Ollama should fall through to Gemini Flash
-and then heuristics-only per the circuit-breaker contract described above.
+</details>
