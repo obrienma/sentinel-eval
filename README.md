@@ -94,14 +94,27 @@ what earlier layers flag as ambiguous — not on every item.
 
 ## Plugging in a new system-under-test
 
-`src/sentinel_eval/adapters/synapse_l4.py` is a real example:
-`make_synapse_l4_system_under_test()` returns a callable that POSTs to
-Synapse-L4's `/ingest` and maps its Axiom response into `EvalPrediction`
-(`status` → `label`, `anomaly_score` → `confidence`). It calls the real
-service over HTTP rather than importing Synapse-L4's Python modules
-directly — see the module docstring for why (heavy service-specific
-dependencies, a Python-version mismatch, and an import-time config
-requirement that would all violate the standalone-module mandate).
+Two real adapters exist under `src/sentinel_eval/adapters/`:
+
+- **`synapse_l4.py`**: `make_synapse_l4_system_under_test()` POSTs to
+  Synapse-L4's `/ingest` and maps its Axiom response into `EvalPrediction`
+  (`status` → `label`, `anomaly_score` → `confidence`). Calls the real
+  service over HTTP rather than importing its Python modules directly —
+  see the module docstring for why (heavy service-specific dependencies,
+  a Python-version mismatch, and an import-time config requirement that
+  would all violate the standalone-module mandate).
+- **`sentinel_l7.py`**: `make_sentinel_l7_system_under_test()` speaks
+  MCP-over-HTTP directly to Sentinel-L7's `/mcp` endpoint (`analyze-transaction`
+  tool) — a hand-rolled minimal JSON-RPC client for this one tool call,
+  not the full `mcp` SDK. `risk_level` → `label`, `confidence` → `confidence`
+  (`0.0` when Sentinel-L7's rule-based fallback path ran with no AI model
+  involved, since `EvalPrediction.confidence` is non-optional). Required a
+  small additive change to Sentinel-L7 itself
+  (`TransactionProcessorService::process()` previously collapsed its full
+  compliance grading down to a boolean `is_threat` before this tool could
+  see it — `risk_level`/`narrative`/`confidence`/`policy_refs` are now
+  surfaced too, verified backward-compatible against that repo's full test
+  suite).
 
 To wire up a new one:
 
