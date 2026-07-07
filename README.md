@@ -1,7 +1,7 @@
 # sentinel-eval
 
 A standalone AI evaluation framework for scoring the outputs of services in
-the Rhizome-Praetor suite — currently **Sentinel-L7** (`ComplianceDriver`
+the Rhizome Risk system — currently **Sentinel-L7** (`ComplianceDriver`
 compliance/AML verdicts) and **Synapse-L4** (`Axiom` telemetry validation).
 It is not embedded in either service: the harness knows nothing about
 Sentinel or Synapse specifically, only about the normalized prediction
