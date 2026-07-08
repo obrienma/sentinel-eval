@@ -375,6 +375,14 @@ strict accuracy alone would misrepresent that as a failure.
 
 ## 🔭 Observability
 
+**🚧 Status: instrumented, not yet confirmed flowing.** The tracer/meter
+setup is verified against in-memory span/metric exporters in this repo's
+own test suite, but has never been run against a live Collector — Docker
+wasn't reachable in the session that built it. Unlike Synapse-L4,
+Sentinel-L7, and EventHorizon, there's no observed trace in Tempo for
+`arbiter-l8` yet. Tracked with that same distinction in
+`rhizome-observability`'s own status table.
+
 Every layer function and `evaluate_item` are wrapped in `@traced_layer(...)`
 (`arbiter_l8.observability.decorators`), which is both a decorator and a
 context manager — the same helper wraps `run_heuristics` as a whole
@@ -388,8 +396,10 @@ Traces and metrics both export via OTLP/HTTP to
 `${OTEL_EXPORTER_OTLP_ENDPOINT}/v1/traces` and `/v1/metrics`
 (`OTEL_EXPORTER_OTLP_ENDPOINT` defaults to `http://localhost:4318`,
 `OTEL_SERVICE_NAME` defaults to `arbiter-l8`) — the same Collector
-endpoint EventHorizon and Synapse-L4 export to, so all three show up
-distinctly in Grafana/Tempo. Metrics:
+endpoint EventHorizon and Synapse-L4 export to.
+
+
+Metrics:
 
 - `arbiter_l8.judge.outcome` (counter, labeled `source=ollama|flash|
   fallback`) — the "% scored by judge vs fallback" signal from
