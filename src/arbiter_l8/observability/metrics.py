@@ -42,7 +42,7 @@ judge_outcome_counter = meter.create_counter(
     "arbiter_l8.judge.outcome",
     unit="1",
     description=(
-        "Judge-layer resolutions by source (ollama/flash/fallback) — "
+        "Judge-layer resolutions by source (ollama/gemini_flash/heuristics_fallback) — "
         "the '% scored by judge vs fallback' signal from docs/adr/0001"
     ),
 )

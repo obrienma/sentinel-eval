@@ -28,7 +28,7 @@ only matter for the live steps below.
 uv run pytest -v
 ```
 
-Expect all tests passing (70 as of the CLI step). The "connection refused"
+Expect all tests passing (77 as of the `synapse_l4_ground_truth.json` fixture, step 12). The "connection refused"
 OTel warnings on exit are expected without a local Collector at
 `:4318` — instrumentation degrades gracefully and never affects
 correctness (same posture Synapse-L4 uses).

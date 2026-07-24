@@ -40,6 +40,9 @@ flowchart LR
   - [🔌 Plugging in a New System-Under-Test](#-plugging-in-a-new-system-under-test)
 - [📊 Benchmark Results](#-benchmark-results)
 - [🔭 Observability](#-observability)
+  - [🔍 Overview](#-overview)
+  - [📊 Grafana Dashboard](#-grafana-dashboard)
+  - [🛠️ Implementation](#️-implementation)
 - [🔧 Configuration](#-configuration)
 - [📚 Docs](#-docs)
 - [🗺️ Roadmap](#️-roadmap)
@@ -75,7 +78,7 @@ flowchart LR
 
 - **Python 3.12+** with `uv`
 - Nothing else for `uv sync` / `uv run pytest` — every external call in the automated suite is mocked at the HTTP boundary.
-- **Optional, live verification only:** a running Sentinel-L7 and/or Synapse-L4 instance, a reachable Ollama host (embedding + judge), a Gemini API key (judge fallback), Upstash Vector credentials (consistency layer) — see [🔧 Configuration](#-configuration).
+- **Optional, live verification only:** a running Sentinel-L7 and/or Synapse-L4 instance, a reachable Ollama host (embedding + judge), a Gemini API key (judge fallback), Upstash Vector credentials (consistency layer) — copy [`.env.example`](.env.example) to `.env` and fill these in; `config.py` loads `.env` automatically via `python-dotenv` and never overrides a variable already set in the real environment. See [🔧 Configuration](#-configuration).
 
 > [!NOTE]
 > Developed on **WSL2 (Ubuntu)**. Other environments may work but are untested.
@@ -89,13 +92,18 @@ uv sync
 # 2. Run the automated test suite (no live services required)
 uv run pytest
 
-# 3. Score a fixture against a real Sentinel-L7 instance
+# 3. Optional, live verification only: configure real endpoints/credentials
+cp .env.example .env
+# then fill in GEMINI_API_KEY, UPSTASH_VECTOR_REST_URL/TOKEN — everything
+# else in .env.example already has a working default for this dev environment
+
+# 4. Score a fixture against a real Sentinel-L7 instance
 uv run arbiter-l8 --system sentinel-l7 \
   --fixture tests/fixtures/sentinel_l7_ground_truth.json \
   --driver ollama --binary --limit 25
 ```
 
-> [!TIP]
+> [!NOTE]
 > For the full live-verification walkthrough — starting local
 > Sentinel-L7/Synapse-L4 servers, exercising every online layer by hand,
 > expected output for each step — see
@@ -129,9 +137,9 @@ rather than a raw traceback.
 **Live-verified**: run against a temporarily-started local Sentinel-L7
 server with `--driver ollama` (bypassing the semantic cache) — a live item
 scored correctly (`accuracy: 1/1 (100.0%)`). A larger batch surfaced a real
-timeout on a slower Ollama response (a single driver-override call has
-been observed to take anywhere from ~4.7s to timing out past the
-adapter's default 10s) — the CLI's
+timeout on a slower Ollama response — a single driver-override call has
+ranged from ~4.7s to over 10s, occasionally crossing the adapter's
+default per-request timeout — and the CLI's
 `httpx.ConnectError`/`TimeoutException` handling caught it and exited `1`
 with a friendly message rather than crashing, exercising that path against
 a genuine failure, not a mock. Full steps, exact commands, and expected
@@ -377,49 +385,51 @@ strict accuracy alone would misrepresent that as a failure.
 
 ## 🔭 Observability
 
-**🚧 Status: instrumented, not yet confirmed flowing.** The tracer/meter
-setup is verified against in-memory span/metric exporters in this repo's
-own test suite, but has never been run against a live Collector — Docker
-wasn't reachable in the session that built it. Unlike Synapse-L4,
-Sentinel-L7, and EventHorizon, there's no observed trace in Tempo for
-`arbiter-l8` yet. Tracked with that same distinction in
-`rhizome-observability`'s own status table.
+### 🔍 Overview
+
+Traces and metrics export via OTLP/HTTP to the same Collector
+Sentinel-L7/Synapse-L4/EventHorizon use — Arbiter-L8's signal sits in the
+shared **[Rhizome Lens](https://github.com/obrienma/rhizome-lens#readme)**
+Grafana monitoring stack, not a bespoke dashboard.
+
+### 📊 Grafana Dashboard
+
+> [!INFO]
+> Live telemetry, not a static snapshot — the exact split across Ollama/Flash/fallback will shift each time this runs. Two things it doesn't show yet are tracked openly rather than left implicit: **Judge Chain Errors** doesn't yet break out `exception.type`/`exception.message` as columns, and the `gemini_flash` outcome gap noted in [🐛 Known Issues](#-known-issues) is still unconfirmed. Both are tracked in [🗺️ Roadmap](#-roadmap).
+
+<p align="center">
+    <img width="500" alt="Arbiter-L8 Grafana dashboard" src="docs/assets/grafana-2026-07-23 162852.png" />
+</p>
+
+| Panel | What it shows |
+|---|---|
+| **Judge Outcome Rate (by source)** | Live throughput of judge-layer resolutions, split by which source resolved them: `ollama`, `gemini_flash`, `heuristics_fallback`. Shows the circuit breaker's fallback distribution as it happens, not just a final tally. |
+| **% Scored by Judge (vs Fallback)** | Headline availability metric: of all ambiguous items that reached the judge layer, what share got a real LLM opinion (Ollama or Gemini Flash) rather than falling through to heuristics-only. Tracks judge-tier uptime, not judge accuracy. |
+| **Per-Layer Latency (p95)** | p95 latency per online-pipeline layer (`heuristics_check`, `cross_provider_disagreement`, `embedding_consistency`, `judge_call`), from the `arbiter_l8.layer.latency` histogram. `judge_call` is expected to dominate — it's the only layer that makes a network call. |
+| **Evaluation Throughput** | Rate of `evaluate_item` spans: predictions per second flowing through the full online scoring pipeline. |
+| **Evaluation Latency (p50/p95/p99)** | End-to-end `evaluate_item` duration, from Tempo. Includes whichever subset of layers 2–4 actually ran for a given item, since escalation is dependency-gated. |
+| **Judge Outcome (cumulative, by source)** | Running total of judge outcomes per source since the counter started, as a sanity check alongside the rate panel. |
+| **Judge Chain Errors (exception events)** | Exception span events under `arbiter-l8` traces — an `ollama_attempt` or `flash_attempt` that raised before the breaker fell through to the next source. Exception type/message live on the span but aren't shown as table columns yet. |
+| **Recent Evaluations** | Most recent `evaluate_item` traces; opens into the full per-item layer waterfall (heuristics → disagreement/consistency → judge). |
+
+
+### 🛠️ Implementation
+
+> OTLP export is always on; the SDK degrades gracefully without a reachable
+> Collector — `uv run pytest` never depends on one (the "connection
+> refused" warnings on exit at `:4318` are expected, same posture
+> Synapse-L4 uses; see `docs/DEV_GETTING_STARTED.md`).
 
 Every layer function and `evaluate_item` are wrapped in `@traced_layer(...)`
-(`arbiter_l8.observability.decorators`), which is both a decorator and a
-context manager — the same helper wraps `run_heuristics` as a whole
-function and wraps individual attempts inside `JudgeCircuitBreaker.judge()`
-as inline blocks (`ollama_attempt`, `flash_attempt`, `heuristics_fallback`),
-so a Tempo trace for one scored item shows the full circuit-breaker path —
-e.g. an Ollama timeout followed by a Gemini Flash success — not just the
-final outcome.
+(`arbiter_l8.observability.decorators`), so a single trace shows a scored
+item's full path through the pipeline — fallback attempts included, not
+just the final outcome.
 
-Traces and metrics both export via OTLP/HTTP to
-`${OTEL_EXPORTER_OTLP_ENDPOINT}/v1/traces` and `/v1/metrics`
-(`OTEL_EXPORTER_OTLP_ENDPOINT` defaults to `http://localhost:4318`,
-`OTEL_SERVICE_NAME` defaults to `arbiter-l8`) — the same Collector
-endpoint EventHorizon and Synapse-L4 export to.
-
-
-Metrics:
-
-- `arbiter_l8.judge.outcome` (counter, labeled `source=ollama|flash|
-  fallback`) — the "% scored by judge vs fallback" signal from
-  `docs/adr/0001-standalone-module.md`.
-- `arbiter_l8.layer.latency` (histogram, labeled `layer=...`) — per-layer
-  latency for the four online layers.
-- `arbiter_l8.harness.metric` (gauge, labeled `metric=precision|recall|
-  f1|accuracy`, `label=<label>|overall`) — emitted once per `run_eval()`
-  call, so a prompt/model change shows up as a step change in Grafana.
-
-The SDK is initialized as an import-time side effect
-(`arbiter_l8/observability/tracing.py`, `metrics.py`) rather than behind
-a lazily-invoked init function — see that module's docstring for why:
-Synapse-L4's current pattern (configuring OTel inside a FastAPI `lifespan`
-handler, after the app and its routes are already constructed) is the
-suspected cause of its trace-fragmentation bug, and this repo deliberately
-avoids reproducing that ordering.
-
+The SDK initializes as an import-time side effect
+(`observability/tracing.py`, `metrics.py`) rather than behind a lazy init
+function — this avoids Synapse-L4's suspected trace-fragmentation bug,
+caused by configuring OTel inside a FastAPI `lifespan` handler after
+routes already exist.
 
 ## 🔧 Configuration
 
@@ -428,15 +438,22 @@ calling real systems-under-test (same style as `observability/_env.py`):
 `SYNAPSE_L4_BASE_URL`, `SENTINEL_L7_MCP_URL`, `OLLAMA_JUDGE_HOST`/
 `OLLAMA_JUDGE_MODEL` (remote, over Tailscale — LLM-as-judge only),
 `OLLAMA_URL`/`OLLAMA_EMBEDDING_MODEL` (same env var names as Sentinel-L7's
-own embedding config — in this environment both `OLLAMA_JUDGE_HOST` and
-`OLLAMA_URL` happen to point at the same Tailscale host, since one Ollama
-instance serves both the judge and embedding models here, but they're
-independent settings), `GEMINI_API_KEY`/`GEMINI_FLASH_URL` (same env var
+own embedding config — defaults to the same Tailscale host as
+`OLLAMA_JUDGE_HOST`, since one Ollama instance serves both the judge and
+embedding models here, but they're independent settings, each overridable
+on its own), `GEMINI_API_KEY`/`GEMINI_FLASH_URL` (same env var
 names Sentinel-L7 uses, so one value covers both services), and
 `UPSTASH_VECTOR_REST_URL`/`UPSTASH_VECTOR_REST_TOKEN`/
 `UPSTASH_VECTOR_THRESHOLD` (same env var names and default threshold as
 Sentinel-L7's `config/services.php` — no default URL/token, since those
 are account-specific secrets).
+
+Copy [`.env.example`](.env.example) to `.env` and fill in the
+account-specific secrets — `config.py` calls `load_dotenv()` as an
+import-time side effect, so `.env` is picked up automatically without any
+extra wiring at call sites. A real environment variable, if already set,
+always wins over `.env`. `.env` is gitignored; `.env.example` is the
+committed template.
 
 
 ## 📚 Docs
@@ -444,7 +461,9 @@ are account-specific secrets).
 | File | Contents |
 | --- | --- |
 | [README.md](README.md) | Project overview |
-| [docs/adr/0001-standalone-module.md](docs/adr/0001-standalone-module.md) | Why arbiter-l8 is standalone, not embedded in Sentinel-L7 |
+| [docs/adr/0001-standalone-module.md](docs/adr/0001-standalone-module.md) | Why Arbiter-L8 is standalone, not embedded in Sentinel-L7 |
+| [docs/adr/0002-online-escalation-pipeline.md](docs/adr/0002-online-escalation-pipeline.md) | Design record for the cost-ordered, escalation-gated online scoring pipeline |
+| [docs/USER_STORIES.md](docs/USER_STORIES.md) | User stories by actor/domain — implemented, aspirational, and explicitly deferred |
 | [docs/DEV_GETTING_STARTED.md](docs/DEV_GETTING_STARTED.md) | Full live-verification walkthrough — manual tests against real Sentinel-L7/Synapse-L4/online-layer infrastructure |
 | [docs/journal/](docs/journal/) | Engineering journal — one entry per phase/step |
 | [docs/probes/](docs/probes/) | Paired Anki spaced-repetition probe cards, one file per journal entry |
@@ -455,16 +474,27 @@ are account-specific secrets).
 
 ### 📋 Planned
 
-- [ ] **CLI surface for the online layers** — deliberately deferred; wiring providers/`embed_fn`/judge is a per-deployment decision (see [📦 CLI Reference](#-cli-reference)), not a one-shot command.
+- [ ] **Surface `exception.type`/`exception.message` as Judge Chain Errors panel columns** — the exception already lands on the `ollama_attempt`/`flash_attempt` spans (OTel auto-records it there, see `test_traced_layer_records_exception_on_span` in `tests/test_observability.py`); this is a Grafana panel/dashboard config gap, not an Arbiter-L8 code gap. See [🔭 Observability](#-observability).
+- [ ] **Route the unresolved ambiguous tail to human review** — `heuristics_fallback` is currently the terminal state for judge-unavailable items, not a queue entry; no human-verdict store or review surface exists yet.
+- [ ] **Measure judge trustworthiness, not just judge availability** — depends on the human-review item above; `arbiter_l8.judge.outcome` today answers "did an LLM respond," not "was it right."
 - [ ] **Re-run the full 25-item judge validation sample** against the v2 prompt to get a real before/after accuracy comparison — only a single live spot-check has been done so far (see [📊 Benchmark Results](#-benchmark-results)); the original 92%/80% numbers still reflect the v1 prompt.
 - [ ] **Ground truth for genuine LLM-driven Axiom extraction** — `synapse_l4_ground_truth.json` only covers the deterministic fast path (no LLM involved); ADR-0001 still flags real extraction-correctness ground truth as unsolved, out of scope for Phase 3.
+- [ ] **Add an offline-eval panel to the Grafana dashboard** — `run_eval()` emits an `arbiter_l8.harness.metric` gauge (precision/recall/f1/accuracy per call) so a prompt/model swap should be visible as a step change over time, but the current dashboard only covers the online pipeline; no panel plots this metric yet.
+- [ ] **Mirror the confirmed-flowing observability status in Rhizome Lens's own service status table** — this repo's traces/metrics are now verified landing in a live Collector (see [🔭 Observability](#-observability)); that status isn't yet reflected on the Rhizome Lens side.
+
+> **Not planned:** a CLI surface for the online layers. This is a documented non-goal, not deferred-until-later work — wiring providers/`embed_fn`/judge is a per-deployment decision (see [📦 CLI Reference](#-cli-reference)), not a one-shot command.
 
 ### 🐛 Known Issues
 
-- **Ollama driver-override latency can exceed the adapter's default 10s timeout.** A single Sentinel-L7 `--driver ollama` call has been observed to take anywhere from ~4.7s to past 10s against the real model — occasionally crossing the adapter's default per-request timeout and surfacing as a genuine `httpx.TimeoutException`. Not a bug in the CLI's error handling, which catches it correctly; see `docs/DEV_GETTING_STARTED.md`.
-- **`compliance_dataset.json` isn't adapter-compatible.** Its `input` shape doesn't match either adapter's real request contract (Synapse-shaped fields flattened, missing the `source_id`/`payload` envelope). Use `sentinel_l7_ground_truth.json` for real adapter runs; `compliance_dataset.json` is retained only as a hand-written judge-prompt smoke fixture.
-- **Sentinel-L7's own semantic cache can amplify a single wrong verdict for narrow-profile merchants.** Not a arbiter-l8 bug, but it affects online-layer/CLI runs against Sentinel-L7 whenever `--driver` isn't forced — see Sentinel-L7's own README Known Issues.
-- **Synapse-L4's deterministic fast path can produce a self-contradictory Axiom.** `extract()`'s Shape 2 mapping (`_try_direct_extraction`) derives `status` from `raw.payload.status` (`passed`/`success`/`failed`/`error`, checked first) but derives `anomaly_score` from `processed.classification` independently — so an event with `status: "passed"` and `classification: "critical"` deterministically produces `status: "nominal"` + `anomaly_score: 0.9`, which the Judge stage correctly rejects (`anomaly_score >= 0.8 requires status 'critical'`). Confirmed live, reproducible on demand (no LLM involved). Not a arbiter-l8 bug — Synapse-L4's own code, out of scope to fix here per `docs/adr/0001-standalone-module.md`'s standalone boundary.
+- **A `--driver ollama` call can exceed the adapter's 10s default timeout.** Against the real model, a single Sentinel-L7 `--driver ollama` call has ranged from ~4.7s to over 10s — occasionally crossing the adapter's default per-request timeout and surfacing as a genuine `httpx.TimeoutException`. Expected variance for real inference, not a CLI bug: the timeout is caught and reported cleanly (`docs/DEV_GETTING_STARTED.md`).
+
+- **`compliance_dataset.json` isn't adapter-compatible — use `sentinel_l7_ground_truth.json` instead.** Its `input` shape predates the current adapter contract (Synapse-shaped fields flattened, missing the `source_id`/`payload` envelope). It's retained intentionally, as a hand-written smoke fixture for judge-prompt testing, not for real adapter runs.
+
+- **Sentinel-L7's semantic cache can amplify a single wrong verdict for narrow-profile merchants.** Only affects online-layer/CLI runs against Sentinel-L7 when `--driver` isn't forced. This is Sentinel-L7's own caching behavior, not an Arbiter-L8 issue — see Sentinel-L7's README Known Issues for detail.
+
+- **Synapse-L4's deterministic fast path can produce a self-contradictory Axiom — and the Judge stage catches it.** `extract()`'s Shape 2 mapping (`_try_direct_extraction`) derives `status` from `raw.payload.status` independently of how it derives `anomaly_score` from `processed.classification`. An event with `status: "passed"` and `classification: "critical"` deterministically produces `status: "nominal"` + `anomaly_score: 0.9` — an internal contradiction the Judge stage correctly rejects (`anomaly_score >= 0.8 requires status 'critical'`) rather than silently passing through. Confirmed live and reproducible on demand, no LLM involved. This is Synapse-L4's own code; fixing it there is out of scope for Arbiter-L8 per the standalone boundary in `docs/adr/0001-standalone-module.md`.
+
+- **`gemini_flash` hasn't appeared as a judge-outcome source yet — likely explained by Gemini free-tier quota limits.** Since going live, judge outcomes have split between `ollama` and `heuristics_fallback` only. The probable cause is Gemini free-tier quota exhaustion during the same session (see Benchmark Results): if Flash is out of quota, every Ollama failure falls straight through to `heuristics_fallback` without a Flash outcome ever landing. That's a strong read of the pattern but not yet confirmed against exception data — see the Roadmap item to surface `exception.type`/`exception.message` on judge-chain error spans, which would confirm it directly instead of by inference.
 
 ### 🏁 Completed (Phase 3)
 
